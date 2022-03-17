@@ -13,10 +13,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
+
+const updateLimit = 10 * time.Second
 
 var addr = flag.String("addr", ":8080", "http service address")
 
@@ -38,8 +41,9 @@ var conf = &oauth2.Config{
 }
 
 type user struct {
-	Id       int
-	Username string
+	Id             int
+	Username       string
+	LastTileUpdate time.Time
 }
 
 // Each session contains the user information and the oauth state
@@ -111,7 +115,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 	var j jsonBody
 	if err := json.NewDecoder(resp.Body).Decode(&j); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -124,6 +128,15 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 func (s session) isAuthenticated() bool {
 	return s.Id != 0
+}
+
+func (u *user) SetTile(hub *Hub, x, y int, color string) error {
+	if time.Since(u.LastTileUpdate) < updateLimit {
+		return errors.New("rate limited")
+	}
+	hub.broadcast <- []byte(fmt.Sprintf("%d %d %s", x, y, color))
+	u.LastTileUpdate = time.Now()
+	return nil
 }
 
 func getSession(r *http.Request) (*session, error) {
@@ -156,7 +169,9 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// authenticate
-	if err := authPersonalAccessToken(r); err != nil {
+	user, err := authPersonalAccessToken(r)
+	if err != nil {
+		log.Println(err)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -169,36 +184,41 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	var j jsonBody
 	if err := json.NewDecoder(r.Body).Decode(&j); err != nil {
+		log.Println(err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	hub.broadcast <- []byte(fmt.Sprintf("%d %d %s", j.X, j.Y, j.Color))
+	if err := user.SetTile(hub, j.X, j.Y, j.Color); err != nil {
+		log.Println(err)
+		http.Error(w, "Too Early", http.StatusTooEarly)
+		return
+	}
 }
 
 // authPersonalAccessToken will authenticate an Authorization header by
 // forwarding a request to recurse.com API and cache a successful result
 // in pacCache.
-func authPersonalAccessToken(r *http.Request) error {
+func authPersonalAccessToken(r *http.Request) (*user, error) {
 	// get token
 	pacToken := r.Header.Get("Authorization")
 	if pacToken == "" {
-		return errors.New("missing authentication token")
+		return nil, errors.New("missing authentication token")
 	}
 	// check cache
-	if _, ok := pacCache[pacToken]; ok {
-		return nil
+	if u, ok := pacCache[pacToken]; ok {
+		return u, nil
 	}
 	// send request to recurse.com
 	req, err := http.NewRequest(http.MethodGet, "https://recurse.com/api/v1/profiles/me", nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("Authorization", pacToken)
 
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// read body
@@ -210,7 +230,7 @@ func authPersonalAccessToken(r *http.Request) error {
 
 	var j jsonBody
 	if err := json.NewDecoder(resp.Body).Decode(&j); err != nil {
-		return err
+		return nil, err
 	}
 
 	// update cache
@@ -218,7 +238,7 @@ func authPersonalAccessToken(r *http.Request) error {
 		Id:       j.Id,
 		Username: j.Slug,
 	}
-	return nil
+	return pacCache[pacToken], nil
 }
 
 func serveLogin(w http.ResponseWriter, r *http.Request) {
