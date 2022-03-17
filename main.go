@@ -25,7 +25,7 @@ import (
 var resources embed.FS
 var home = template.Must(template.ParseFS(resources, "home.html"))
 
-const updateLimit = 10 * time.Second
+const updateLimit = 1 * time.Second
 
 var addr = flag.String("addr", ":8080", "http service address")
 
