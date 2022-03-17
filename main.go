@@ -29,6 +29,8 @@ var sessions = map[string]*session{}
 // pacCache is a personal access token cache used by the /tile API
 var pacCache = map[string]*user{}
 
+var lastUpdateCache = map[string]time.Time{}
+
 var conf = &oauth2.Config{
 	RedirectURL:  os.Getenv("OAUTH_REDIRECT"),
 	ClientID:     os.Getenv("OAUTH_CLIENT_ID"),
@@ -41,9 +43,8 @@ var conf = &oauth2.Config{
 }
 
 type user struct {
-	Id             int
-	Username       string
-	LastTileUpdate time.Time
+	Id       int
+	Username string
 }
 
 // Each session contains the user information and the oauth state
@@ -131,11 +132,11 @@ func (s session) isAuthenticated() bool {
 }
 
 func (u *user) SetTile(hub *Hub, x, y int, color string) error {
-	if time.Since(u.LastTileUpdate) < updateLimit {
+	if time.Since(lastUpdateCache[u.Username]) < updateLimit {
 		return errors.New("rate limited")
 	}
 	hub.broadcast <- []byte(fmt.Sprintf("%d %d %s", x, y, color))
-	u.LastTileUpdate = time.Now()
+	lastUpdateCache[u.Username] = time.Now()
 	return nil
 }
 
@@ -301,7 +302,12 @@ func main() {
 		serveTile(hub, w, r)
 	})
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
+		session, err := getSession(r)
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+			return
+		}
+		serveWs(hub, &session.user, w, r)
 	})
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
