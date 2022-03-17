@@ -43,8 +43,13 @@ window.onload = function () {
         conn.onmessage = function (evt) {
             // read in (x, y, color) and color grid accordingly
             var messages = evt.data.split('\n');
-            var [x, y, color] = messages[0].split(' ');
-            setColor(x, y, color);
+            messages.forEach(message => {
+                if (!message) {
+                    return
+                }
+                var [x, y, color] = message.split(' ');
+                setColor(x, y, color);
+            });
         };
     } else {
         var item = document.createElement("div");

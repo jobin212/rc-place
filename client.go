@@ -6,6 +6,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -85,6 +86,23 @@ func (c *Client) writePump() {
 		ticker.Stop()
 		c.conn.Close()
 	}()
+
+	// send messages to initialize board state
+	c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+	w, err := c.conn.NextWriter(websocket.TextMessage)
+	if err != nil {
+		return
+	}
+	for y := range c.hub.board {
+		for x := range c.hub.board[y] {
+			msg := fmt.Sprintf("%d %d %s\n", x, y, c.hub.board[y][x])
+			w.Write([]byte(msg))
+		}
+	}
+	if err := w.Close(); err != nil {
+		return
+	}
+
 	for {
 		select {
 		case message, ok := <-c.send:
