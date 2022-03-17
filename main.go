@@ -6,10 +6,12 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -18,6 +20,10 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
+
+//go:embed home.html
+var resources embed.FS
+var home = template.Must(template.ParseFS(resources, "home.html"))
 
 const updateLimit = 10 * time.Second
 
@@ -73,7 +79,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if session.isAuthenticated() {
-		http.ServeFile(w, r, "home.html")
+		home.Execute(w, nil)
 		return
 	}
 
