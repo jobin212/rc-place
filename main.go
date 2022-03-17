@@ -5,22 +5,46 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
 
-// stateMap is used for oauth redirection to protect users from CSRF
-// attacks. See https://pkg.go.dev/golang.org/x/oauth2#Config.AuthCodeURL
-var stateMap = map[string]string{}
+// // stateMap is used for oauth redirection to protect users from CSRF
+// // attacks. See https://pkg.go.dev/golang.org/x/oauth2#Config.AuthCodeURL
+// var stateMap = map[string]string{}
+
+// this map stores the users sessions. For larger scale applications, you can use a database or cache for this purpose
+var sessions = map[string]*session{}
+
+var conf = &oauth2.Config{
+	RedirectURL:  os.Getenv("OAUTH_REDIRECT"),
+	ClientID:     os.Getenv("OAUTH_CLIENT_ID"),
+	ClientSecret: os.Getenv("OAUTH_CLIENT_SECRET"),
+	Scopes:       []string{},
+	Endpoint: oauth2.Endpoint{
+		AuthURL:  "https://www.recurse.com/oauth/authorize",
+		TokenURL: "https://www.recurse.com/oauth/token",
+	},
+}
+
+// each session contains the username of the user and the time at which it expires
+type session struct {
+	id       int
+	username string
+	state    string
+}
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
@@ -32,10 +56,22 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	session, err := getSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	if session.isAuthenticated() {
+		http.ServeFile(w, r, "home.html")
+		return
+	}
+
 	// authenticate user
 	state := r.FormValue("state")
 	code := r.FormValue("code")
-	if state == "" || state != stateMap[r.RemoteAddr] {
+	if state == "" || state != session.state {
 		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 		return
 	}
@@ -44,8 +80,63 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unoauthorized", http.StatusUnauthorized)
 		return
 	}
-	// TODO: should we actually try to use the token to see if it's legitimate?
-	http.ServeFile(w, r, "home.html")
+
+	// get a token from the authorization code
+	tok, err := conf.Exchange(context.TODO(), code)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// create a client to send authorized requests to recurse.com
+	client := conf.Client(context.TODO(), tok)
+	resp, err := client.Get("https://recurse.com/api/v1/profiles/me")
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// read body and log / display
+	defer resp.Body.Close()
+	type jsonBody struct {
+		Id   int    `json:"id"`
+		Slug string `json:"slug"`
+	}
+
+	var j jsonBody
+	if err := json.NewDecoder(resp.Body).Decode(&j); err != nil {
+		fmt.Println(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	session.id = j.Id
+	session.username = j.Slug
+
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+func (s session) isAuthenticated() bool {
+	return s.id != 0
+}
+
+func getSession(r *http.Request) (*session, error) {
+	// We can obtain the session token from the requests cookies, which come with every request
+	c, err := r.Cookie("session_token")
+	if err != nil {
+		return nil, err
+	}
+	sessionToken := c.Value
+
+	// We then get the session from our session map
+	userSession, exists := sessions[sessionToken]
+	if !exists {
+		return nil, errors.New("Session not found")
+	}
+
+	return userSession, nil
 }
 
 func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
@@ -86,26 +177,22 @@ func serveLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// generate random string
-	state, err := generateRandomString()
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	// Create a new random session token
+	sessionToken := uuid.NewString()
+
+	// Set the token in the session map, along with the session information
+	sessions[sessionToken] = &session{
+		state: uuid.NewString(),
 	}
-	// TODO: use cookie value instead of RemoteAddr
-	stateMap[r.RemoteAddr] = state
-	conf := &oauth2.Config{
-		RedirectURL:  os.Getenv("OAUTH_REDIRECT"),
-		ClientID:     os.Getenv("OAUTH_CLIENT_ID"),
-		ClientSecret: os.Getenv("OAUTH_CLIENT_SECRET"),
-		Scopes:       []string{},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://recurse.com/oauth/authorize",
-			TokenURL: "https://recurse.com/oauth/token",
-		},
-	}
-	url := conf.AuthCodeURL(stateMap[r.RemoteAddr], oauth2.AccessTypeOnline)
+
+	// Finally, we set the client cookie for "session_token" as the session token we just generated
+	// we also set an expiry time of 120 seconds
+	http.SetCookie(w, &http.Cookie{
+		Name:  "session_token",
+		Value: sessionToken,
+	})
+
+	url := conf.AuthCodeURL(sessions[sessionToken].state, oauth2.AccessTypeOnline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
