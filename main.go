@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -21,12 +20,11 @@ import (
 
 var addr = flag.String("addr", ":8080", "http service address")
 
-// // stateMap is used for oauth redirection to protect users from CSRF
-// // attacks. See https://pkg.go.dev/golang.org/x/oauth2#Config.AuthCodeURL
-// var stateMap = map[string]string{}
-
-// this map stores the users sessions. For larger scale applications, you can use a database or cache for this purpose
+// sessions stores user session information for browser login
 var sessions = map[string]*session{}
+
+// pacCache is a personal access token cache used by the /tile API
+var pacCache = map[string]*user{}
 
 var conf = &oauth2.Config{
 	RedirectURL:  os.Getenv("OAUTH_REDIRECT"),
@@ -39,11 +37,17 @@ var conf = &oauth2.Config{
 	},
 }
 
-// each session contains the username of the user and the time at which it expires
-type session struct {
+type user struct {
 	Id       int
 	Username string
-	State    string
+}
+
+// Each session contains the user information and the oauth state
+// to protect users from CSRF attacks.
+// See https://pkg.go.dev/golang.org/x/oauth2#Config.AuthCodeURL
+type session struct {
+	user
+	State string
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -140,6 +144,7 @@ func getSession(r *http.Request) (*session, error) {
 }
 
 func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	// TODO: respond with JSON bodies always
 	log.Println(r.URL)
 	if r.URL.Path != "/tile" {
 		http.Error(w, "Not found", http.StatusNotFound)
@@ -147,6 +152,12 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// authenticate
+	if err := authPersonalAccessToken(r); err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -162,6 +173,52 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	hub.broadcast <- []byte(fmt.Sprintf("%d %d %s", j.X, j.Y, j.Color))
+}
+
+// authPersonalAccessToken will authenticate an Authorization header by
+// forwarding a request to recurse.com API and cache a successful result
+// in pacCache.
+func authPersonalAccessToken(r *http.Request) error {
+	// get token
+	pacToken := r.Header.Get("Authorization")
+	if pacToken == "" {
+		return errors.New("missing authentication token")
+	}
+	// check cache
+	if _, ok := pacCache[pacToken]; ok {
+		return nil
+	}
+	// send request to recurse.com
+	req, err := http.NewRequest(http.MethodGet, "https://recurse.com/api/v1/profiles/me", nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", pacToken)
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	// read body
+	defer resp.Body.Close()
+	type jsonBody struct {
+		Id   int    `json:"id"`
+		Slug string `json:"slug"`
+	}
+
+	var j jsonBody
+	if err := json.NewDecoder(resp.Body).Decode(&j); err != nil {
+		return err
+	}
+
+	// update cache
+	pacCache[pacToken] = &user{
+		Id:       j.Id,
+		Username: j.Slug,
+	}
+	return nil
 }
 
 func serveLogin(w http.ResponseWriter, r *http.Request) {
@@ -230,15 +287,4 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-}
-
-// generateRandomString generates a random hex string
-func generateRandomString() (string, error) {
-	n := 8
-	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	s := fmt.Sprintf("%x", b)
-	return s, nil
 }
