@@ -227,6 +227,9 @@ func authPersonalAccessToken(r *http.Request) (*user, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("unauthorized")
+	}
 
 	// read body
 	defer resp.Body.Close()
