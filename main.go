@@ -41,9 +41,9 @@ var conf = &oauth2.Config{
 
 // each session contains the username of the user and the time at which it expires
 type session struct {
-	id       int
-	username string
-	state    string
+	Id       int
+	Username string
+	State    string
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +71,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	// authenticate user
 	state := r.FormValue("state")
 	code := r.FormValue("code")
-	if state == "" || state != session.state {
+	if state == "" || state != session.State {
 		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 		return
 	}
@@ -112,14 +112,14 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.id = j.Id
-	session.username = j.Slug
+	session.Id = j.Id
+	session.Username = j.Slug
 
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
 func (s session) isAuthenticated() bool {
-	return s.id != 0
+	return s.Id != 0
 }
 
 func getSession(r *http.Request) (*session, error) {
@@ -150,8 +150,6 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: authentication
-
 	defer r.Body.Close()
 	type jsonBody struct {
 		X     int    `json:"x"`
@@ -177,12 +175,18 @@ func serveLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	currentSession, err := getSession(r)
+	if err == nil && currentSession.isAuthenticated() {
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
 	// Create a new random session token
 	sessionToken := uuid.NewString()
 
 	// Set the token in the session map, along with the session information
 	sessions[sessionToken] = &session{
-		state: uuid.NewString(),
+		State: uuid.NewString(),
 	}
 
 	// Finally, we set the client cookie for "session_token" as the session token we just generated
@@ -192,7 +196,7 @@ func serveLogin(w http.ResponseWriter, r *http.Request) {
 		Value: sessionToken,
 	})
 
-	url := conf.AuthCodeURL(sessions[sessionToken].state, oauth2.AccessTypeOnline)
+	url := conf.AuthCodeURL(sessions[sessionToken].State, oauth2.AccessTypeOnline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
