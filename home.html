@@ -6,32 +6,47 @@
 window.onload = function () {
     var conn;
     var msg = document.getElementById("msg");
-    var log = document.getElementById("log");
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const tileSize = 4;
 
-    function setColor(x, y, color) {
-        ctx.fillStyle = color; // TODO add color validation
-        ctx.fillRect(4*x + 2, 4*y, 4, 4);
+    var color = 'black';
+    function getCursorPosition(canvas, event) {
+        const rect = canvas.getBoundingClientRect()
+        const x = Math.round((event.clientX - rect.left) / tileSize) - 1;
+        const y = Math.round((event.clientY - rect.top) / tileSize) - 1;
+        sendColor(x, y, color);
+    }
+    canvas.addEventListener('mousedown', function(e) {
+        getCursorPosition(canvas, e)
+    })
+
+    function setColor(x, y, c) {
+        ctx.fillStyle = c; // TODO add color validation?
+        ctx.fillRect(tileSize*x + 2, tileSize*y, tileSize, tileSize);
     }
 
-    function appendLog(item) {
-        var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
-        log.appendChild(item);
-        if (doScroll) {
-            log.scrollTop = log.scrollHeight - log.clientHeight;
-        }
+    function sendColor(x, y, c) {
+        if (!conn) { return; }
+        // use global color if not provided
+        if (!c) { c = color; }
+        conn.send(x + " " + y + " " + c);
     }
 
     document.getElementById("form").onsubmit = function () {
-        if (!conn) {
-            return false;
-        }
         if (!msg.value) {
             return false;
         }
-        conn.send(msg.value);
+        if (msg.value.split(' ').length == 1) {
+            // just setting a color locally
+            color = msg.value;
+            document.getElementById('color').innerText = color;
+        } else {
+            // otherwise, send the command to the server
+            var [x, y, c] = msg.value.split(' ');
+            sendColor(x, y, c);
+        }
         msg.value = "";
         return false;
     };
@@ -45,7 +60,6 @@ window.onload = function () {
         conn.onclose = function (evt) {
             var item = document.createElement("div");
             item.innerHTML = "<b>Connection closed.</b>";
-            appendLog(item);
         };
         conn.onmessage = function (evt) {
             // read in (x, y, color) and color grid accordingly
@@ -54,14 +68,13 @@ window.onload = function () {
                 if (!message) {
                     return
                 }
-                var [x, y, color] = message.split(' ');
-                setColor(x, y, color);
+                var [x, y, c] = message.split(' ');
+                setColor(x, y, c);
             });
         };
     } else {
         var item = document.createElement("div");
         item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
-        appendLog(item);
     }
 };
 </script>
@@ -91,7 +104,7 @@ body {
     overflow: auto;
 }
 
-#form {
+#input {
     padding: 0 0.5em 0 0.5em;
     margin: 0;
     position: absolute;
@@ -120,9 +133,13 @@ tr {
 </head>
 <body>
 <canvas id="canvas" width="402" height="402"></canvas>
+<div id="input">
+<p>Set your color by entering it in the form, or send a command in the format "x y color"</p>
 <form id="form">
     <input type="submit" value="Send" />
     <input type="text" id="msg" size="64" autofocus />
+    <label id="color">black</label>
 </form>
+</div>
 </body>
 </html>
