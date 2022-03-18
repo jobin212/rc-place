@@ -1,4 +1,12 @@
 # rc-place
+A place for [Recursers](https://www.recurse.com) to color pixels, inspired by
+[r/place](https://www.reddit.com/r/place/).
+
+## Build and Run
+
+```bash
+make run
+```
 
 ## TODO
 - Follow up on other architecture decisions detailed in [How We Built r/place](https://www.redditinc.com/blog/how-we-built-rplace), e.g. Redis
@@ -15,3 +23,4 @@
 - Load testing
 - Token server?
 - Explore RC cluster?
+- Queue up changes and apply them all at midnight?
