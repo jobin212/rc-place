@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Chat Example</title>
+<title>rc-place</title>
 <script type="text/javascript">
 window.onload = function () {
     var conn;
@@ -12,7 +12,6 @@ window.onload = function () {
     const ctx = canvas.getContext('2d');
 
     function setColor(x, y, color) {
-        console.log(color)
         ctx.fillStyle = color; // TODO add color validation
         ctx.fillRect(4*x + 2, 4*y, 4, 4);
     }
@@ -120,7 +119,7 @@ tr {
 </style>
 </head>
 <body>
-<canvas id="canvas" width="400" height="400"></canvas>
+<canvas id="canvas" width="402" height="402"></canvas>
 <form id="form">
     <input type="submit" value="Send" />
     <input type="text" id="msg" size="64" autofocus />
