@@ -2,6 +2,8 @@
 A place for [Recursers](https://www.recurse.com) to color pixels, inspired by
 [r/place](https://www.reddit.com/r/place/).
 
+![RC Place Image from 2022-03-21](docs/rc-place-2022-03-21.png)
+
 ## Build and Run
 
 ```bash
