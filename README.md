@@ -7,16 +7,19 @@ A place for [Recursers](https://www.recurse.com) to color pixels, inspired by
 
 ## Build and Run
 - Create an OAuth application at [https://www.recurse.com/settings/apps](https://www.recurse.com/settings/apps) with proper redirect URI (http://localhost:8080/auth for local run). Make sure to set your app's ID, Secret, and Redirect URI in your environmental vairables.
-- Run docker Redis.
+- Run docker Redis
 ```bash
-docker run redis
+docker run --name rc-place-redis -d -p 6379:6379 redis 
 ```
+- Run rc-place app
 ```bash
 make run
 ```
 
-## Diagnose
-- Access local 
+## Diagnose Redis
+```bash
+docker exec -it rc-place-redis sh
+```
 
 
 ## Deploy
