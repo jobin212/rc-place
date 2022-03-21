@@ -1,0 +1,25 @@
+# fly.toml file generated for rc-place-redis on 2022-03-21T09:15:02-07:00
+# SET REDIS_PASSWORD={PW} APPENDONLY="yes" MAXMEMORY_POLICY="noeviction"
+
+app = "rc-place-redis"
+
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[build]
+  image = "flyio/redis:6.2.6"
+
+[env]
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[mount]
+  destination = "/data"
+  source = "redis_server"
+
+[metrics]
+  port = 9091
+  path = "/metrics"
