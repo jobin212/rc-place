@@ -11,6 +11,9 @@ window.onload = function () {
     const ctx = canvas.getContext('2d');
     const tileSize = 4;
 
+    const canvas2 = document.getElementById('canvas2')
+    const ctx2 = canvas2.getContext('2d')
+
     var color = 'black';
     function getCursorPosition(canvas, event) {
         const rect = canvas.getBoundingClientRect()
@@ -27,12 +30,49 @@ window.onload = function () {
         ctx.fillRect(tileSize*x + 2, tileSize*y, tileSize, tileSize);
     }
 
+    function setColor2(x, y, c) {
+        colorMap = {
+            "0": "red",
+            "1": "orange",
+            "2": "yellow",
+            "3": "green",
+            "4": "blue",
+            "5": "indigo",
+            "6": "violet",
+            "7": "brown"
+        }
+
+        ctx2.fillStyle = colorMap[c%7];
+        ctx2.fillRect(tileSize*x + 2, tileSize*y, tileSize, tileSize);
+    }
+
     function sendColor(x, y, c) {
         if (!conn) { return; }
         // use global color if not provided
         if (!c) { c = color; }
         conn.send(x + " " + y + " " + c);
     }
+
+    fetch("http://" + document.location.host + "/board").then(function(response) {
+        return response.json()
+    }).then(function(data) {
+        boardState = data["boardState"]
+        console.log(boardState)
+        decodedState = atob(boardState)
+        console.log(decodedState)
+        for (i = 0; i < 5000; i++) {
+            console.log(i)
+            firstElem = decodedState.charCodeAt(i) >> 4 
+            secondElem = decodedState.charCodeAt(i) & 15
+            console.log("" + firstElem + " : " + secondElem)
+            x1 = i / 50
+            y1 = 2 * (i % 50)
+            setColor2(x1, y1, firstElem)
+            x2 = i / 50
+            y2 = 2 * (i % 50) + 1
+            setColor2(x2, y2, secondElem)
+        }
+    })
 
     document.getElementById("form").onsubmit = function () {
         if (!msg.value) {
@@ -140,6 +180,7 @@ tr {
     <input type="text" id="msg" size="64" autofocus />
     <label id="color">black</label>
 </form>
+<canvas id="canvas2" width="402" height="402"></canvas>
 </div>
 </body>
 </html>
