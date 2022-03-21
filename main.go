@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -18,14 +14,26 @@ func main() {
 
 	// check oauth environment variables
 	abort := false
-	for _, env := range []string{"OAUTH_REDIRECT", "OAUTH_CLIENT_ID", "OAUTH_CLIENT_SECRET"} {
-		if os.Getenv(env) == "" {
+	for _, env := range []string{
+		"OAUTH_REDIRECT",
+		"OAUTH_CLIENT_ID",
+		"OAUTH_CLIENT_SECRET",
+		"REDIS_HOST",     // TODO: make optional; use map if not provided
+		"REDIS_PASSWORD", // TODO: make optional; use map if not provided
+	} {
+		if _, ok := os.LookupEnv(env); !ok {
 			log.Println("Required environment variable missing:", env)
 			abort = true
 		}
 	}
 	if abort {
 		log.Println("Aborting")
+		os.Exit(1)
+	}
+
+	// setup redis connection
+	if err := setupRedisClient(); err != nil {
+		log.Println("Error setting up redis:", err)
 		os.Exit(1)
 	}
 
