@@ -67,7 +67,31 @@ func (u *User) SetTile(hub *Hub, x, y int, color string) error {
 	if time.Since(lastUpdateCache[u.Username]) < updateLimit {
 		return errors.New("rate limited")
 	}
-	hub.broadcast <- []byte(fmt.Sprintf("%d %d %s", x, y, color))
+	// validate color
+	nameToColor := map[string]int{
+		"black":          0,
+		"forest":         1,
+		"green":          2,
+		"lime":           3,
+		"blue":           4,
+		"cornflowerblue": 5,
+		"sky":            6,
+		"cyan":           7,
+		"red":            8,
+		"burnt-orange":   9,
+		"orange":         10,
+		"yellow":         11,
+		"purple":         12,
+		"hot-pink":       13,
+		"pink":           14,
+		"white":          15,
+	}
+	colInt, ok := nameToColor[color]
+	if !ok {
+		return errors.New("unknown color")
+	}
+	// TODO: refactor message type
+	hub.broadcast <- []byte(fmt.Sprintf("%d %d %d", x, y, colInt))
 	lastUpdateCache[u.Username] = time.Now()
 	return nil
 }

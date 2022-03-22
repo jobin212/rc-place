@@ -9,8 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 // boardSize is the width and height of the board, matching the table
@@ -46,10 +49,28 @@ func newHub() *Hub {
 		board:      make([][]string, boardSize),
 	}
 
-	bytes, err := redisClient.Get(context.Background(), "rc-place-board-test").Bytes()
+	bytes, err := redisClient.Get(context.Background(), os.Getenv("REDIS_BOARD_KEY")).Bytes()
 	if err != nil {
 		log.Println(err)
-		return nil
+		if err != redis.Nil {
+			panic(err)
+		}
+		// initialize the bitfield
+		for i := 0; i < boardSize*boardSize; i++ {
+			if err := redisClient.BitField(context.Background(),
+				os.Getenv("REDIS_BOARD_KEY"),
+				"SET",
+				"u4",
+				fmt.Sprintf("#%d", i),
+				5, // 5 is cornflowerblue
+			).Err(); err != nil {
+				panic(err)
+			}
+		}
+		bytes, err = redisClient.Get(context.Background(), os.Getenv("REDIS_BOARD_KEY")).Bytes()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// initialize board
@@ -124,7 +145,7 @@ func (h *Hub) parseAndSave(message []byte) error {
 	h.board[yPos][xPos] = color
 	offset := yPos*boardSize + xPos
 
-	_, err = redisClient.BitField(context.Background(), "rc-place-board-test", "SET", "u4", fmt.Sprintf("#%d", offset), color).Result()
+	_, err = redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), color).Result()
 	if err != nil {
 		return err
 	}

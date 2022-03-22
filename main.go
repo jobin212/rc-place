@@ -20,6 +20,7 @@ func main() {
 		"OAUTH_CLIENT_SECRET",
 		"REDIS_HOST",     // TODO: make optional; use map if not provided
 		"REDIS_PASSWORD", // TODO: make optional; use map if not provided
+		"REDIS_BOARD_KEY",
 	} {
 		if _, ok := os.LookupEnv(env); !ok {
 			log.Println("Required environment variable missing:", env)
