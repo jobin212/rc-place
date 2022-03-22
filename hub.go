@@ -126,5 +126,11 @@ func (h *Hub) parseAndSave(message []byte) error {
 	}
 
 	h.board[yPos][xPos] = color
+
+	offset := yPos*100 + xPos
+	fmt.Printf("OFFSET %d AND COLOR %s\n", offset, color)
+
+	_, err = redisClient.BitField(context.Background(), "rc-place-board-test", "SET", "u4", fmt.Sprintf("#%d", offset), color).Result()
+
 	return nil
 }

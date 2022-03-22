@@ -72,27 +72,6 @@ window.onload = function () {
         conn.send(x + " " + y + " " + reverseColorMap[c]);
     }
 
-    // fetch("http://" + document.location.host + "/board").then(function(response) {
-    //     return response.json()
-    // }).then(function(data) {
-    //     boardState = data["boardState"]
-    //     // console.log(boardState)
-    //     decodedState = atob(boardState)
-    //     // console.log(decodedState)
-    //     for (i = 0; i < 5000; i++) {
-    //         // console.log(i)
-    //         firstElem = decodedState.charCodeAt(i) >> 4 
-    //         secondElem = decodedState.charCodeAt(i) & 15
-    //         // console.log("" + firstElem + " : " + secondElem)
-    //         x1 = i / 50
-    //         y1 = 2 * (i % 50)
-    //         setColor(x1, y1, firstElem)
-    //         x2 = i / 50
-    //         y2 = 2 * (i % 50) + 1
-    //         setColor(x2, y2, secondElem)
-    //     }
-    // })
-
     document.getElementById("form").onsubmit = function () {
         if (!msg.value) {
             return false;
@@ -198,7 +177,7 @@ tr {
 <form id="form">
     <input type="submit" value="Send" />
     <input type="text" id="msg" size="64" autofocus />
-    <label id="color">black</label>
+    <label id="color">red</label>
 </form>
 </div>
 </body>

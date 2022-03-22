@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"log"
@@ -45,45 +44,35 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func serveBoard(w http.ResponseWriter, r *http.Request) {
-	// for i := 0; i < 10000; i++ {
-	// 	_, err := redisClient.BitField(context.Background(), "rc-place-board-test", "SET", "u4", fmt.Sprintf("#%d", i), i%16).Result()
+// func serveBoard(w http.ResponseWriter, r *http.Request) {
+// 	bytes, err := redisClient.Get(context.Background(), "rc-place-board-test").Bytes()
+// 	if err != nil {
+// 		log.Println(err)
+// 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 	} else {
-	// 		log.Printf("wrote %d to %d\n", i%16, i)
-	// 	}
-	// }
+// 	type jsonResponse struct {
+// 		BoardState []byte `json:"boardState"`
+// 	}
 
-	bytes, err := redisClient.Get(context.Background(), "rc-place-board-test").Bytes()
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
+// 	data := jsonResponse{
+// 		BoardState: bytes,
+// 	}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	json.NewEncoder(w).Encode(data)
 
-	type jsonResponse struct {
-		BoardState []byte `json:"boardState"`
-	}
+// 	// should print string representing length 10000 array of unsigned 4bit ints
+// 	log.Println(bytes)
 
-	data := jsonResponse{
-		BoardState: bytes,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(data)
+// 	for i := 0; i < len(bytes); i++ {
+// 		log.Printf("%d: %b\n", i, bytes[i]>>4)
+// 		log.Printf("%d: %b\n", i, bytes[i]<<4>>4)
+// 	}
 
-	// should print string representing length 10000 array of unsigned 4bit ints
-	log.Println(bytes)
-
-	for i := 0; i < len(bytes); i++ {
-		log.Printf("%d: %b\n", i, bytes[i]>>4)
-		log.Printf("%d: %b\n", i, bytes[i]<<4>>4)
-	}
-
-	return
-}
+// 	return
+// }
 
 // authPersonalAccessToken will authenticate an Authorization header by
 // forwarding a request to recurse.com API and cache a successful result
