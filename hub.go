@@ -59,8 +59,8 @@ func newHub() *Hub {
 
 	for i := 0; i < len(bytes); i++ {
 		firstByte, secondByte := strconv.Itoa(int(bytes[i]>>4)), strconv.Itoa(int(bytes[i]&15))
-		hub.board[i/50][2*(i%50)] = firstByte
-		hub.board[i/50][2*(i%50)+1] = secondByte
+		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))] = firstByte
+		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))+1] = secondByte
 	}
 
 	return hub
@@ -122,7 +122,7 @@ func (h *Hub) parseAndSave(message []byte) error {
 	}
 
 	h.board[yPos][xPos] = color
-	offset := yPos*100 + xPos
+	offset := yPos*boardSize + xPos
 
 	_, err = redisClient.BitField(context.Background(), "rc-place-board-test", "SET", "u4", fmt.Sprintf("#%d", offset), color).Result()
 	if err != nil {

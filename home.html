@@ -68,7 +68,7 @@ window.onload = function () {
     function sendColor(x, y, c) {
         if (!conn) { return; }
         // use global color if not provided
-        if (!c && !reverseColorMap[c]) { c = color; }
+        if (!c || !reverseColorMap[c]) { c = color; }
         conn.send(x + " " + y + " " + reverseColorMap[c]);
     }
 
