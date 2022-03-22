@@ -11,7 +11,45 @@ window.onload = function () {
     const ctx = canvas.getContext('2d');
     const tileSize = 4;
 
-    var color = 'black';
+    const colorMap = {
+        "0": "red",
+        "1": "red",
+        "2": "orange",
+        "3": "orange",
+        "4": "yellow",
+        "5": "yellow",
+        "6": "green",
+        "7": "green",
+        "8": "blue",
+        "9": "blue",
+        "10": "indigo",
+        "11": "indigo",
+        "12": "violet",
+        "13": "violet",
+        "14": "brown",
+        "15": "brown"
+    }
+
+    const reverseColorMap = {
+        "red": "0",
+        "red": "1",
+        "orange": "2",
+        "orange": "3",
+        "yellow": "4",
+        "yellow": "5",
+        "green": "6",
+        "green": "7",
+        "blue": "8",
+        "blue": "9",
+        "indigo": "10",
+        "indigo": "11",
+        "violet": "12",
+        "violet": "13",
+        "brown": "14",
+        "brown": "15"
+    }
+
+    var color = 'red';
     function getCursorPosition(canvas, event) {
         const rect = canvas.getBoundingClientRect()
         const x = Math.round((event.clientX - rect.left) / tileSize) - 1;
@@ -23,15 +61,15 @@ window.onload = function () {
     })
 
     function setColor(x, y, c) {
-        ctx.fillStyle = c; // TODO add color validation?
+        ctx.fillStyle = colorMap[c];
         ctx.fillRect(tileSize*x + 2, tileSize*y, tileSize, tileSize);
     }
 
     function sendColor(x, y, c) {
         if (!conn) { return; }
         // use global color if not provided
-        if (!c) { c = color; }
-        conn.send(x + " " + y + " " + c);
+        if (!c || !reverseColorMap[c]) { c = color; }
+        conn.send(x + " " + y + " " + reverseColorMap[c]);
     }
 
     document.getElementById("form").onsubmit = function () {
@@ -138,7 +176,7 @@ tr {
 <form id="form">
     <input type="submit" value="Send" />
     <input type="text" id="msg" size="64" autofocus />
-    <label id="color">black</label>
+    <label id="color">red</label>
 </form>
 </div>
 </body>
