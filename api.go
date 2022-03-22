@@ -44,36 +44,6 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func serveBoard(w http.ResponseWriter, r *http.Request) {
-// 	bytes, err := redisClient.Get(context.Background(), "rc-place-board-test").Bytes()
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(w, "Internal server error", http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	type jsonResponse struct {
-// 		BoardState []byte `json:"boardState"`
-// 	}
-
-// 	data := jsonResponse{
-// 		BoardState: bytes,
-// 	}
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	json.NewEncoder(w).Encode(data)
-
-// 	// should print string representing length 10000 array of unsigned 4bit ints
-// 	log.Println(bytes)
-
-// 	for i := 0; i < len(bytes); i++ {
-// 		log.Printf("%d: %b\n", i, bytes[i]>>4)
-// 		log.Printf("%d: %b\n", i, bytes[i]<<4>>4)
-// 	}
-
-// 	return
-// }
-
 // authPersonalAccessToken will authenticate an Authorization header by
 // forwarding a request to recurse.com API and cache a successful result
 // in pacCache.
