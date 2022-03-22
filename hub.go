@@ -5,7 +5,9 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -44,12 +46,25 @@ func newHub() *Hub {
 		board:      make([][]string, boardSize),
 	}
 
+	bytes, err := redisClient.Get(context.Background(), "rc-place-board-test").Bytes()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
 	// initialize board
 	for i := 0; i < len(hub.board); i++ {
 		hub.board[i] = make([]string, boardSize)
-		for j := 0; j < boardSize; j++ {
-			hub.board[i][j] = "cornflowerblue"
-		}
+	}
+
+	for i := 0; i < len(bytes); i++ {
+		firstByte, secondByte := bytes[i]>>4, bytes[i]&15
+		fmt.Printf("%b %b\n", firstByte, secondByte)
+		fstring1 := strconv.Itoa(int(firstByte))
+		fstring2 := strconv.Itoa(int(secondByte))
+		fmt.Printf("%s %s\n", fstring1, fstring2)
+		hub.board[i/50][2*(i%50)] = fstring1
+		hub.board[i/50][2*(i%50)+1] = fstring2
 	}
 
 	return hub
