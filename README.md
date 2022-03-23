@@ -1,5 +1,7 @@
 # rc-place
-[![Go Report Card](https://goreportcard.com/badge/github.com/jobin212/rc-place)](https://goreportcard.com/report/github.com/jobin212/rc-place)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jobin212/rc-place)](https://goreportcard.com/report/github.com/jobin212/rc-place) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
+
 
 A place for [Recursers](https://www.recurse.com) to color pixels, inspired by
 [r/place](https://www.reddit.com/r/place/). For architecture details, see [How We Built r/Place
