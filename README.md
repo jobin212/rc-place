@@ -39,6 +39,7 @@ Create an OAuth application at [https://www.recurse.com/settings/apps](https://w
 ```
 
 ## Deploy
+Create an account on fly.io and then create an app for rc-place, an app for rc-place-redis, and a volume for rc-place-redis (place in the same region as your rc-place-redis app).ß
 ```shell
 🎨 fly deploy
 ```
