@@ -54,6 +54,7 @@ func main() {
 		}
 		serveWs(hub, &session.User, w, r)
 	})
+	log.Printf("Running on port %s\n", *addr)
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
