@@ -1,4 +1,4 @@
-name: Github Actions Demo
+name: Go build action
 on: [push]
 jobs:
   Explore-GitHub-Actions:
@@ -14,4 +14,11 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          stable: 'false'
+          go-version: '1.18.0'
+      - run: go version
+      - run: go build
       - run: echo "🍏 This job's status is ${{ job.status }}."
