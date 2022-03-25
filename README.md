@@ -29,8 +29,7 @@ Create an OAuth application at [https://www.recurse.com/settings/apps](https://w
 
 ```shell
 # Use Redis Redis
-🎨 docker exec -it rc-place-redis sh
-🎨 ./redis-cli
+🎨 docker exec -it rc-place-redis redis-cli
 
 # Reset board
 🎨 del $REDIS_BOARD_KEY 
@@ -56,3 +55,4 @@ Create an OAuth application at [https://www.recurse.com/settings/apps](https://w
 - Load testing
 - Token server?
 - Queue up changes and apply them all at midnight?
+- SSH clients
