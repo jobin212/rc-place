@@ -116,6 +116,12 @@ window.onload = function () {
         var item = document.createElement("div");
         item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
     }
+
+    const paletteSquares = document.getElementsByClassName("palette-square");
+
+    for (let el of paletteSquares) {
+        el.addEventListener("change", (e) => { if (e.target.checked) color = e.target.value});
+    }
 };
 </script>
 <style type="text/css">
@@ -173,6 +179,26 @@ tr {
 </head>
 <body>
 <canvas id="canvas" width="402" height="402"></canvas>
+
+<div class="palette">
+    <input class="palette-square" type="radio" name="color" value="black">
+    <input class="palette-square" type="radio" name="color" value="forest">
+    <input class="palette-square" type="radio" name="color" value="green">
+    <input class="palette-square" type="radio" name="color" value="lime">
+    <input class="palette-square" type="radio" name="color" value="blue">
+    <input class="palette-square" type="radio" name="color" value="cornflowerblue">
+    <input class="palette-square" type="radio" name="color" value="sky">
+    <input class="palette-square" type="radio" name="color" value="cyan">
+    <input class="palette-square" type="radio" name="color" value="red">
+    <input class="palette-square" type="radio" name="color" value="burnt-orange">
+    <input class="palette-square" type="radio" name="color" value="orange">
+    <input class="palette-square" type="radio" name="color" value="yellow">
+    <input class="palette-square" type="radio" name="color" value="purple">
+    <input class="palette-square" type="radio" name="color" value="hot-pink">
+    <input class="palette-square" type="radio" name="color" value="pink">
+    <input class="palette-square" type="radio" name="color" value="white">
+</div>
+
 <div id="input">
 <p>Set your color by entering it in the form, or send a command in the format "x y color"</p>
 <form id="form">
