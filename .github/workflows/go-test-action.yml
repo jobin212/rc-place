@@ -21,4 +21,8 @@ jobs:
           go-version: '1.18.0'
       - run: go version
       - run: go build
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: go test
       - run: echo "🍏 This job's status is ${{ job.status }}."
