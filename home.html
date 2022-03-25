@@ -116,6 +116,12 @@ window.onload = function () {
         var item = document.createElement("div");
         item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
     }
+
+    const paletteSquares = document.getElementsByClassName("palette-square");
+
+    for (let el of paletteSquares) {
+        el.addEventListener("change", (e) => { if (e.target.checked) color = e.target.value});
+    }
 };
 </script>
 <style type="text/css">
@@ -169,13 +175,110 @@ tr {
     margin: 0;
 }
 
+.palette {
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+}
+
+.palette-square input {
+    display: none;
+}
+
+.palette-square {
+    position: relative;
+    border-top: 2px solid black;
+    border-left: 2px solid black;
+    border-bottom: 2px solid #aaa;
+    border-right: 2px solid #aaa;
+    height: 20px;
+    width: 20px;
+}
+
+.palette-square span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #eee;
+}
 </style>
 </head>
 <body>
 <canvas id="canvas" width="402" height="402"></canvas>
+
+
 <div id="input">
 <p>Set your color by entering it in the form, or send a command in the format "x y color"</p>
 <form id="form">
+
+<div class="palette">
+    <label class="palette-square">
+        <input type="radio" name="color" value="black">
+        <span style="background-color: black;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="forest">
+        <span style="background-color: #005500;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="green">
+        <span style="background-color: green;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="lime">
+        <span style="background-color: lime;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="blue">
+        <span style="background-color: blue;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="cornflowerblue">
+        <span style="background-color: cornflowerblue;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="sky">
+        <span style="background-color: #00abff;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="cyan">
+        <span style="background-color: cyan;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="red" checked>
+        <span style="background-color: red;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="burnt-orange">
+        <span style="background-color: #ff5500;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="orange">
+        <span style="background-color: orange;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="yellow">
+        <span style="background-color: yellow;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="purple">
+        <span style="background-color: purple;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="hot-pink">
+        <span style="background-color: hotpink;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="pink">
+        <span style="background-color: pink;"></span>
+    </label>
+    <label class="palette-square">
+        <input type="radio" name="color" value="white">
+        <span style="background-color: white;"></span>
+    </label>
+</div>
     <input type="submit" value="Send" />
     <input type="text" id="msg" size="64" autofocus />
     <label id="color">red</label>
