@@ -46,7 +46,7 @@ func main() {
 	http.HandleFunc("/tile", func(w http.ResponseWriter, r *http.Request) {
 		serveTile(hub, w, r)
 	})
-	http.HandleFunc("/ws", func(wz http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		session, err := getSession(r)
 		if err != nil {
 			http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
