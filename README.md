@@ -28,7 +28,7 @@ Create an OAuth application at [https://www.recurse.com/settings/apps](https://w
 ## Other tools
 
 ```shell
-# Use Redis Redis
+# Use Redis docker
 🎨 docker exec -it rc-place-redis redis-cli
 
 # Reset board
