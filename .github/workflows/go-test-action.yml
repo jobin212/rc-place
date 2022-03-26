@@ -1,7 +1,7 @@
 name: Go test
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  Run-Go-Tests:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
