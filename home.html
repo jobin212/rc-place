@@ -6,7 +6,6 @@
     <script type="text/javascript">
         window.onload = function () {
             var conn;
-            var msg = document.getElementById("msg");
 
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
@@ -73,25 +72,6 @@
                 conn.send(x + " " + y + " " + nameToColor[c]);
             }
 
-            document.getElementById("form").onsubmit = function () {
-                if (!msg.value) {
-                    return false;
-                }
-                if (msg.value.split(' ').length == 1) {
-                    // just setting a color locally
-                    if (nameToColor[msg.value]) {
-                        color = msg.value;
-                        document.getElementById('color').innerText = color;
-                    }
-                } else {
-                    // otherwise, send the command to the server
-                    var [x, y, c] = msg.value.split(' ');
-                    sendColor(x, y, c);
-                }
-                msg.value = "";
-                return false;
-            };
-
             if (window["WebSocket"]) {
                 var prefix = "wss";
                 if (window.location.hostname == "localhost") {
@@ -121,7 +101,22 @@
             const paletteSquares = document.getElementsByClassName("palette-square");
 
             for (let el of paletteSquares) {
-                el.addEventListener("change", (e) => { if (e.target.checked) color = e.target.value });
+                el.addEventListener("change", function(event) {
+                    if (event.target.checked) {
+                        const palette = document.getElementById('palette');
+                        palette.style.bordertop
+
+                        // uncheck previous color
+                        selectedPalette = palette.children[nameToColor[color]].style.borderTopColor = 'black'
+                        selectedPalette = palette.children[nameToColor[color]].style.borderLeftColor = 'black'
+                        selectedPalette = palette.children[nameToColor[color]].style.borderBottomColor = '#aaa'
+                        selectedPalette = palette.children[nameToColor[color]].style.borderRightColor = '#aaa'
+
+                        // select new color
+                        color = event.target.value
+                        selectedPalette = palette.children[nameToColor[color]].style.borderColor = 'red'
+                    }
+                });
             }
         };
     </script>
@@ -213,12 +208,9 @@
 <body>
     <canvas id="canvas" width="402" height="402"></canvas>
 
-
     <div id="input">
-        <p>Set your color by entering it in the form, or send a command in the format "x y color"</p>
         <form id="form">
-
-            <div class="palette">
+            <div class="palette" id="palette">
                 <label class="palette-square">
                     <input type="radio" name="color" value="black">
                     <span style="background-color: black;"></span>
@@ -284,9 +276,6 @@
                     <span style="background-color: white;"></span>
                 </label>
             </div>
-            <input type="submit" value="Send" />
-            <input type="text" id="msg" size="64" autofocus />
-            <label id="color">red</label>
         </form>
     </div>
 </body>
