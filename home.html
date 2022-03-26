@@ -1,288 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<title>rc-place</title>
-<script type="text/javascript">
-window.onload = function () {
-    var conn;
-    var msg = document.getElementById("msg");
+    <title>rc-place</title>
+    <script type="text/javascript">
+        window.onload = function () {
+            var conn;
 
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const tileSize = 4;
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const tileSize = 4;
 
-    const colorMap = {
-        "0":  "#000000",
-        "1":  "#005500",
-        "2":  "#00ab00",
-        "3":  "#00ff00",
-        "4":  "#0000ff",
-        "5":  "#6495ed",
-        "6":  "#00abff",
-        "7":  "#00ffff",
-        "8":  "#ff0000",
-        "9":  "#ff5500",
-        "10": "#ffab00",
-        "11": "#ffff00",
-        "12": "#800080",
-        "13": "#ff55ff",
-        "14": "#ffabff",
-        "15": "#ffffff"
-    }
-
-    const nameToColor = {
-        "black":          "0",
-        "forest":         "1",
-        "green":          "2",
-        "lime":           "3",
-        "blue":           "4",
-        "cornflowerblue": "5",
-        "sky":            "6",
-        "cyan":           "7",
-        "red":            "8",
-        "burnt-orange":   "9",
-        "orange":         "10",
-        "yellow":         "11",
-        "purple":         "12",
-        "hot-pink":       "13",
-        "pink":           "14",
-        "white":          "15"
-    }
-
-    var color = 'red';
-    function getCursorPosition(canvas, event) {
-        const rect = canvas.getBoundingClientRect()
-        const x = Math.round((event.clientX - rect.left) / tileSize) - 1;
-        const y = Math.round((event.clientY - rect.top) / tileSize) - 1;
-        sendColor(x, y, color);
-    }
-    canvas.addEventListener('mousedown', function(e) {
-        getCursorPosition(canvas, e)
-    })
-
-    function setColor(x, y, c) {
-        ctx.fillStyle = colorMap[c];
-        ctx.fillRect(tileSize*x + 2, tileSize*y, tileSize, tileSize);
-    }
-
-    function sendColor(x, y, c) {
-        if (!conn) { return; }
-        // use global color if not provided
-        if (!c || !nameToColor[c]) { c = color; }
-        conn.send(x + " " + y + " " + nameToColor[c]);
-    }
-
-    document.getElementById("form").onsubmit = function () {
-        if (!msg.value) {
-            return false;
-        }
-        if (msg.value.split(' ').length == 1) {
-            // just setting a color locally
-            if (nameToColor[msg.value]) {
-                color = msg.value;
-                document.getElementById('color').innerText = color;
+            const colorMap = {
+                "0": "#000000",
+                "1": "#005500",
+                "2": "#00ab00",
+                "3": "#00ff00",
+                "4": "#0000ff",
+                "5": "#6495ed",
+                "6": "#00abff",
+                "7": "#00ffff",
+                "8": "#ff0000",
+                "9": "#ff5500",
+                "10": "#ffab00",
+                "11": "#ffff00",
+                "12": "#ff00ff",
+                "13": "#ff55ff",
+                "14": "#ffabff",
+                "15": "#ffffff"
             }
-        } else {
-            // otherwise, send the command to the server
-            var [x, y, c] = msg.value.split(' ');
-            sendColor(x, y, c);
-        }
-        msg.value = "";
-        return false;
-    };
 
-    if (window["WebSocket"]) {
-        var prefix = "wss";
-        if (window.location.hostname == "localhost") {
-            prefix = "ws";
-        }
-        conn = new WebSocket(prefix + "://" + document.location.host + "/ws");
-        conn.onclose = function (evt) {
-            var item = document.createElement("div");
-            item.innerHTML = "<b>Connection closed.</b>";
-        };
-        conn.onmessage = function (evt) {
-            // read in (x, y, color) and color grid accordingly
-            var messages = evt.data.split('\n');
-            messages.forEach(message => {
-                if (!message) {
-                    return
+            const nameToColor = {
+                "black": "0",
+                "forest": "1",
+                "green": "2",
+                "lime": "3",
+                "blue": "4",
+                "cornflowerblue": "5",
+                "sky": "6",
+                "cyan": "7",
+                "red": "8",
+                "burnt-orange": "9",
+                "orange": "10",
+                "yellow": "11",
+                "purple": "12",
+                "hot-pink": "13",
+                "pink": "14",
+                "white": "15"
+            }
+
+            var color = 'red';
+            selectedPalette = palette.children[nameToColor[color]].style.borderColor = 'black'
+
+            function getCursorPosition(canvas, event) {
+                const rect = canvas.getBoundingClientRect()
+                const x = Math.round((event.clientX - rect.left) / tileSize) - 1;
+                const y = Math.round((event.clientY - rect.top) / tileSize) - 1;
+                sendColor(x, y, color);
+            }
+            canvas.addEventListener('mousedown', function (e) {
+                getCursorPosition(canvas, e)
+            })
+
+            function setColor(x, y, c) {
+                ctx.fillStyle = colorMap[c];
+                ctx.fillRect(tileSize * x + 2, tileSize * y, tileSize, tileSize);
+            }
+
+            function sendColor(x, y, c) {
+                if (!conn) { return; }
+                // use global color if not provided
+                if (!c || !nameToColor[c]) { c = color; }
+                conn.send(x + " " + y + " " + nameToColor[c]);
+            }
+
+            if (window["WebSocket"]) {
+                var prefix = "wss";
+                if (window.location.hostname == "localhost") {
+                    prefix = "ws";
                 }
-                var [x, y, c] = message.split(' ');
-                setColor(x, y, c);
-            });
+                conn = new WebSocket(prefix + "://" + document.location.host + "/ws");
+                conn.onclose = function (evt) {
+                    var item = document.createElement("div");
+                    item.innerHTML = "<b>Connection closed.</b>";
+                };
+                conn.onmessage = function (evt) {
+                    // read in (x, y, color) and color grid accordingly
+                    var messages = evt.data.split('\n');
+                    messages.forEach(message => {
+                        if (!message) {
+                            return
+                        }
+                        var [x, y, c] = message.split(' ');
+                        setColor(x, y, c);
+                    });
+                };
+            } else {
+                var item = document.createElement("div");
+                item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+            }
+
+            const paletteSquares = document.getElementsByClassName("palette-square");
+
+            for (let el of paletteSquares) {
+                el.addEventListener("change", function(event) {
+                    if (event.target.checked) {
+                        const palette = document.getElementById('palette');
+                        palette.style.bordertop
+
+                        // uncheck previous color
+                        selectedPalette = palette.children[nameToColor[color]].style.borderTopColor = 'black'
+                        selectedPalette = palette.children[nameToColor[color]].style.borderLeftColor = 'black'
+                        selectedPalette = palette.children[nameToColor[color]].style.borderBottomColor = '#aaa'
+                        selectedPalette = palette.children[nameToColor[color]].style.borderRightColor = '#aaa'
+
+                        // select new color
+                        color = event.target.value
+                        selectedPalette = palette.children[nameToColor[color]].style.borderColor = 'red'
+                    }
+                });
+            }
         };
-    } else {
-        var item = document.createElement("div");
-        item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
-    }
+    </script>
+    <style type="text/css">
+        html {
+            overflow: hidden;
+        }
 
-    const paletteSquares = document.getElementsByClassName("palette-square");
+        body {
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            background: gray;
+        }
 
-    for (let el of paletteSquares) {
-        el.addEventListener("change", (e) => { if (e.target.checked) color = e.target.value});
-    }
-};
-</script>
-<style type="text/css">
-html {
-    overflow: hidden;
-}
+        #log {
+            background: white;
+            margin: 0;
+            padding: 0.5em 0.5em 0.5em 0.5em;
+            position: absolute;
+            top: 0.5em;
+            left: 0.5em;
+            right: 0.5em;
+            bottom: 3em;
+            overflow: auto;
+        }
 
-body {
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background: gray;
-}
+        #input {
+            padding: 0 0.5em 0 0.5em;
+            margin: 0;
+            position: absolute;
+            bottom: 1em;
+            left: 0px;
+            width: 100%;
+            overflow: hidden;
+        }
 
-#log {
-    background: white;
-    margin: 0;
-    padding: 0.5em 0.5em 0.5em 0.5em;
-    position: absolute;
-    top: 0.5em;
-    left: 0.5em;
-    right: 0.5em;
-    bottom: 3em;
-    overflow: auto;
-}
+        td {
+            display: block;
+            width: 4px;
+            height: 4px;
+            padding: 0;
+            margin: 0;
+        }
 
-#input {
-    padding: 0 0.5em 0 0.5em;
-    margin: 0;
-    position: absolute;
-    bottom: 1em;
-    left: 0px;
-    width: 100%;
-    overflow: hidden;
-}
-td {
-    display: block;
-    width: 4px;
-    height: 4px;
-    padding: 0;
-    margin: 0;
-}
-table {
-    border-collapse: collapse;
-}
-tr {
-    display: flex;
-    padding: 0;
-    margin: 0;
-}
+        table {
+            border-collapse: collapse;
+        }
 
-.palette {
-    display: flex;
-    flex-direction: row;
-    gap: 2px;
-}
+        tr {
+            display: flex;
+            padding: 0;
+            margin: 0;
+        }
 
-.palette-square input {
-    display: none;
-}
+        .palette {
+            display: flex;
+            flex-direction: row;
+            gap: 2px;
+        }
 
-.palette-square {
-    position: relative;
-    border-top: 2px solid black;
-    border-left: 2px solid black;
-    border-bottom: 2px solid #aaa;
-    border-right: 2px solid #aaa;
-    height: 20px;
-    width: 20px;
-}
+        .palette-square input {
+            display: none;
+        }
 
-.palette-square span {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 20px;
-    width: 20px;
-    background-color: #eee;
-}
-</style>
+        .palette-square {
+            position: relative;
+            border-top: 2px solid black;
+            border-left: 2px solid black;
+            border-bottom: 2px solid #aaa;
+            border-right: 2px solid #aaa;
+            height: 20px;
+            width: 20px;
+        }
+
+        .palette-square span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            background-color: #eee;
+        }
+    </style>
 </head>
+
 <body>
-<canvas id="canvas" width="402" height="402"></canvas>
+    <canvas id="canvas" width="402" height="402"></canvas>
 
-
-<div id="input">
-<p>Set your color by entering it in the form, or send a command in the format "x y color"</p>
-<form id="form">
-
-<div class="palette">
-    <label class="palette-square">
-        <input type="radio" name="color" value="black">
-        <span style="background-color: black;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="forest">
-        <span style="background-color: #005500;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="green">
-        <span style="background-color: green;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="lime">
-        <span style="background-color: lime;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="blue">
-        <span style="background-color: blue;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="cornflowerblue">
-        <span style="background-color: cornflowerblue;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="sky">
-        <span style="background-color: #00abff;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="cyan">
-        <span style="background-color: cyan;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="red" checked>
-        <span style="background-color: red;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="burnt-orange">
-        <span style="background-color: #ff5500;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="orange">
-        <span style="background-color: orange;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="yellow">
-        <span style="background-color: yellow;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="purple">
-        <span style="background-color: purple;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="hot-pink">
-        <span style="background-color: hotpink;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="pink">
-        <span style="background-color: pink;"></span>
-    </label>
-    <label class="palette-square">
-        <input type="radio" name="color" value="white">
-        <span style="background-color: white;"></span>
-    </label>
-</div>
-    <input type="submit" value="Send" />
-    <input type="text" id="msg" size="64" autofocus />
-    <label id="color">red</label>
-</form>
-</div>
+    <div id="input">
+        <form id="form">
+            <div class="palette" id="palette">
+                <label class="palette-square">
+                    <input type="radio" name="color" value="black">
+                    <span style="background-color: black;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="forest">
+                    <span style="background-color: #005500;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="green">
+                    <span style="background-color: green;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="lime">
+                    <span style="background-color: lime;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="blue">
+                    <span style="background-color: blue;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="cornflowerblue">
+                    <span style="background-color: cornflowerblue;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="sky">
+                    <span style="background-color: #00abff;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="cyan">
+                    <span style="background-color: cyan;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="red" checked>
+                    <span style="background-color: red;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="burnt-orange">
+                    <span style="background-color: #ff5500;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="orange">
+                    <span style="background-color: orange;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="yellow">
+                    <span style="background-color: yellow;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="purple">
+                    <span style="background-color: purple;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="hot-pink">
+                    <span style="background-color: hotpink;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="pink">
+                    <span style="background-color: pink;"></span>
+                </label>
+                <label class="palette-square">
+                    <input type="radio" name="color" value="white">
+                    <span style="background-color: white;"></span>
+                </label>
+            </div>
+        </form>
+    </div>
 </body>
+
 </html>
