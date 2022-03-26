@@ -50,6 +50,8 @@
             }
 
             var color = 'red';
+            selectedPalette = palette.children[nameToColor[color]].style.borderColor = 'black'
+
             function getCursorPosition(canvas, event) {
                 const rect = canvas.getBoundingClientRect()
                 const x = Math.round((event.clientX - rect.left) / tileSize) - 1;
