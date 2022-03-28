@@ -2,7 +2,7 @@
 
 TARGET='https://rc-place.fly.dev'
 # TARGET='http://localhost:8080'
-TIMEOUT='2'
+TIMEOUT='1s'
 
 tiles=(
     "black black black black black black black black black black black black"
@@ -42,7 +42,6 @@ for row in "${tiles[@]}"; do
             continue
         fi
         set-tile-sleep "$x" "$y" "$tile"
-        echo $x $y
     done
     y=$(( y + 1 ))
 done

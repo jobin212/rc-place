@@ -53,9 +53,9 @@ Update the color of a tile located at column x, row y.
 * **Data Params:**
 ```json
 {
-    `x` int,
-    `y` int,
-    `color` string
+    "x": int,
+    "y": int,
+    "color": string
 }
 ```
 Valid colors: `black`, `forest`, `green`, `lime`,          `blue`, `cornflowerblue`, `sky`, `cyan`, `red`, `burnt-orange`, `orange`, `yellow`, `purple`, `hot-pink`, `pink`, `white`.
@@ -67,9 +67,9 @@ Valid colors: `black`, `forest`, `green`, `lime`,          `blue`, `cornflowerbl
   * **Code** 401 Unauthorized <br />
     * Make sure you have a valid personal access token in your authorization header.
   * **Code** 422 Too Early <br />
-    * There's a time limit for sending requets, make sure to wait one second between requests.
+    * There's a time limit for sending requests, make sure to wait one second between requests.
   * **Code** 500 Internal Server Error <br />
-    * You may have found a bug! You're encourage to file an issue with the steps to reproduce.
+    * You may have found a bug! You're encouraged to [file an issue on github](https://github.com/jobin212/rc-place/issues/new) with the steps to reproduce.
 
 * **Sample Call**
 ```shell

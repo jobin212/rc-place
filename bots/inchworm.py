@@ -8,6 +8,7 @@ import time
 prod_url = "https://rc-place.fly.dev/tile"
 local_url = "http://localhost:8080/tile"
 
+# Wait period between API calls in seconds
 timeout = 1.1
 
 def set_tile(x, y, color):
