@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"image/png"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"text/template"
@@ -185,7 +186,7 @@ func serveFavicon(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// favicon should be a multiple of 48 pixels
-	const width, height = 96, 96
+	const width, height = 48, 48
 	// TODO: sync this map with the javascript in home.html
 	colorMap := map[int]color.NRGBA{
 		0:  {0x00, 0x00, 0x00, 0xff},
@@ -209,10 +210,11 @@ func serveFavicon(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// Create a colored image of the given width and height.
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 
+	offsetX, offsetY := rand.Intn(100-width), rand.Intn(100-height)
 	// set pixels from our board
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			colorID := hub.board[y][x]
+			colorID := hub.board[offsetX+y][offsetY+x]
 			// map color ID to RGBA
 			img.Set(x, y, colorMap[colorID])
 		}
