@@ -45,7 +45,7 @@ Create an OAuth application at [https://www.recurse.com/settings/apps](https://w
 
 ## Rest API
 
-**Update tile**
+### Update Tile
 ----
 Update the color of a tile located at column x, row y.
 * **URL:** /tile
@@ -76,7 +76,7 @@ Valid colors: `black`, `forest`, `green`, `lime`,          `blue`, `cornflowerbl
 🎨 curl -X POST http://localhost:8080/tile -H "Content-Type: application/json" -d '{"x": 3, "y": 3, "color": "red"}' -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
 ```
 
-**Get Tiles**
+### Get tiles
 ----
 Get all tiles.
 * **URL:** /tiles

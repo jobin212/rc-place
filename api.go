@@ -57,7 +57,14 @@ func getTiles(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(hub.board)
+	type tilesResponse struct {
+		Board  [][]int `json:"board"`
+		Height int     `json:"height"`
+		Width  int     `json:"width"`
+	}
+
+	board := tilesResponse{Board: hub.board, Height: boardSize, Width: boardSize}
+	resp, err := json.Marshal(board)
 
 	if err != nil {
 		log.Println(err)
