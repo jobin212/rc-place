@@ -39,7 +39,11 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	if err := user.SetTile(hub, j.X, j.Y, j.Color); err != nil {
 		log.Println(err)
-		http.Error(w, "Too Early", http.StatusTooEarly)
+		if err.Error() == "unknown color" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Too Early", http.StatusTooEarly)
+		}
 		return
 	}
 }
@@ -57,7 +61,14 @@ func getTiles(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := json.Marshal(hub.board)
+	type tilesResponse struct {
+		Tiles  [][]int `json:"tiles"`
+		Height int     `json:"height"`
+		Width  int     `json:"width"`
+	}
+
+	board := tilesResponse{Tiles: hub.board, Height: boardSize, Width: boardSize}
+	resp, err := json.Marshal(board)
 
 	if err != nil {
 		log.Println(err)

@@ -45,7 +45,7 @@ Create an OAuth application at [https://www.recurse.com/settings/apps](https://w
 
 ## Rest API
 
-**Update tile**
+### Update Tile
 ----
 Update the color of a tile located at column x, row y.
 * **URL:** /tile
@@ -53,20 +53,20 @@ Update the color of a tile located at column x, row y.
 * **Data Params:**
 ```json
 {
-    "x": int,
-    "y": int,
-    "color": string
+    "x": 2,
+    "y": 4,
+    "color": "red"
 }
 ```
-Valid colors: `black`, `forest`, `green`, `lime`,          `blue`, `cornflowerblue`, `sky`, `cyan`, `red`, `burnt-orange`, `orange`, `yellow`, `purple`, `hot-pink`, `pink`, `white`.
+Valid colors: `black`, `forest`, `green`, `lime`, `blue`, `cornflowerblue`, `sky`, `cyan`, `red`, `burnt-orange`, `orange`, `yellow`, `purple`, `hot-pink`, `pink`, `white`.
 
 * **Success Response:** 200
 * **Error Response**
   * **Code** 400 Bad Request <br />
-    * Invalid json body, make sure you're using the right types and your body is encoded correctly.
+    * Invalid json body: make sure you're using the right types, valid colors, and your body is encoded correctly.
   * **Code** 401 Unauthorized <br />
     * Make sure you have a valid personal access token in your authorization header.
-  * **Code** 422 Too Early <br />
+  * **Code** 425 Too Early <br />
     * There's a time limit for sending requests, make sure to wait one second between requests.
   * **Code** 500 Internal Server Error <br />
     * You may have found a bug! You're encouraged to [file an issue on github](https://github.com/jobin212/rc-place/issues/new) with the steps to reproduce.
@@ -76,7 +76,7 @@ Valid colors: `black`, `forest`, `green`, `lime`,          `blue`, `cornflowerbl
 🎨 curl -X POST http://localhost:8080/tile -H "Content-Type: application/json" -d '{"x": 3, "y": 3, "color": "red"}' -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
 ```
 
-**Get Tiles**
+### Get tiles
 ----
 Get all tiles.
 * **URL:** /tiles
@@ -84,7 +84,9 @@ Get all tiles.
 * **Success Response:** 200
 ```json 
 {
-  // 2d array of integers representing board state
+  "tiles" : [[1, 2], [3, 4]],
+  "height": 2,
+  "width": 2
 }
 ```
 * **Error Response**
