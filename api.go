@@ -39,7 +39,11 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	if err := user.SetTile(hub, j.X, j.Y, j.Color); err != nil {
 		log.Println(err)
-		http.Error(w, "Too Early", http.StatusTooEarly)
+		if err.Error() == "unknown color" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+		} else {
+			http.Error(w, "Too Early", http.StatusTooEarly)
+		}
 		return
 	}
 }

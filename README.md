@@ -63,10 +63,10 @@ Valid colors: `black`, `forest`, `green`, `lime`, `blue`, `cornflowerblue`, `sky
 * **Success Response:** 200
 * **Error Response**
   * **Code** 400 Bad Request <br />
-    * Invalid json body, make sure you're using the right types and your body is encoded correctly.
+    * Invalid json body: make sure you're using the right types, valid colors, and your body is encoded correctly.
   * **Code** 401 Unauthorized <br />
     * Make sure you have a valid personal access token in your authorization header.
-  * **Code** 422 Too Early <br />
+  * **Code** 425 Too Early <br />
     * There's a time limit for sending requests, make sure to wait one second between requests.
   * **Code** 500 Internal Server Error <br />
     * You may have found a bug! You're encouraged to [file an issue on github](https://github.com/jobin212/rc-place/issues/new) with the steps to reproduce.
