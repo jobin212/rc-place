@@ -13,3 +13,7 @@ $(BIN): $(SRC) go.mod go.sum home.html
 
 clean:
 	$(RM) $(BIN)
+
+.PHONY: test
+test:
+	$(GO) test ./...
