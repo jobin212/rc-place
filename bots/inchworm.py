@@ -28,14 +28,13 @@ def main():
         set_tile(headX, headY + y, inchworm_color)
         time.sleep(timeout)
 
-    # move snake :)
+    # move inchworm
     while True:
         set_tile(headX, headY + 1, inchworm_color)
         time.sleep(timeout)
         set_tile(headX, (headY-inchworm_length) % 100, default_color)
         time.sleep(timeout)
-        headY += 1
-        headY %= 100
+        headY = (headY + 1) % 100
 
 if __name__ == "__main__":
     main()

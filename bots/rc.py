@@ -4,6 +4,8 @@ import requests
 import os
 import time
 
+timeout = 1.1
+
 tiles=(
     "black black black black black black black black black black black black",
     "black white white white white white white white white white white black",
@@ -41,7 +43,7 @@ def main():
         for x, color in enumerate(colors):
             if color != "skip":
                 set_tile(offsetX + x, offsetY + y, color)
-                time.sleep(1.1)
+                time.sleep(timeout)
 
 if __name__ == "__main__":
     main()
