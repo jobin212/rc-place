@@ -25,7 +25,7 @@ tiles=(
 function set-tile {
     curl "$TARGET/tile" \
         -d '{"x": '"$1"', "y": '"$2"', "color": "'"$3"'"}' \
-        -H "Authorization: Bearer $TOKEN"
+        -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
 }
 
 function set-tile-sleep {
