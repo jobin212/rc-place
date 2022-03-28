@@ -74,10 +74,12 @@ func newHub() *Hub {
 		hub.board[i] = make([]string, boardSize)
 	}
 
+	// TODO update board to use ints
 	for i := 0; i < len(bytes); i++ {
-		firstByte, secondByte := strconv.Itoa(int(bytes[i]>>4)), strconv.Itoa(int(bytes[i]&15))
-		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))] = firstByte
-		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))+1] = secondByte
+		firstColor, secondColor := getColorsFromByte(bytes[i])
+
+		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))] = strconv.Itoa(firstColor)
+		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))+1] = strconv.Itoa(secondColor)
 	}
 
 	return hub

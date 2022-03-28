@@ -20,3 +20,7 @@ func setupRedisClient() error {
 
 	return redisClient.Ping(ctx).Err()
 }
+
+func getColorsFromByte(b byte) (firstColor, secondColor int) {
+	return (int(b >> 4)), (int(b & 15))
+}

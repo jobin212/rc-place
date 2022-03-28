@@ -44,6 +44,33 @@ func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getTiles(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	if !verifyRoute(w, r, http.MethodGet, "/tiles") {
+		return
+	}
+
+	// authenticate
+	_, err := authPersonalAccessToken(r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	resp, err := json.Marshal(hub.board)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(resp)
+	return
+}
+
 // authPersonalAccessToken will authenticate an Authorization header by
 // forwarding a request to recurse.com API and cache a successful result
 // in pacCache.

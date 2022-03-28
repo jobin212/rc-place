@@ -46,6 +46,9 @@ func main() {
 	http.HandleFunc("/tile", func(w http.ResponseWriter, r *http.Request) {
 		serveTile(hub, w, r)
 	})
+	http.HandleFunc("/tiles", func(w http.ResponseWriter, r *http.Request) {
+		getTiles(hub, w, r)
+	})
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		session, err := getSession(r)
 		if err != nil {
