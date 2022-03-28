@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // pacCache is a personal access token cache used by the /tile API
@@ -12,6 +13,67 @@ var pacCache = map[string]*User{}
 
 // serveTile serves the '/tile' API route for programatically updating a tile.
 func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		updateTile(hub, w, r)
+	} else {
+		getTile(hub, w, r)
+	}
+}
+
+func getTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	if !verifyRoute(w, r, http.MethodGet, "/tile") {
+		return
+	}
+	// TODO: respond with JSON bodies always
+
+	// authenticate
+	_, err := authPersonalAccessToken(r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	query := r.URL.Query()
+	x, err := strconv.Atoi(query.Get("x"))
+	y, err := strconv.Atoi(query.Get("y"))
+
+	if err != nil {
+		log.Println("Missing or malformed query parameter")
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	if err = isInBounds(x, y); err != nil {
+		log.Println("Index out of bounds")
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	color := hub.board[x][y]
+
+	type tileResponse struct {
+		Color int `json:"color"` // TODO update to color string?
+		X     int `json:"x"`
+		Y     int `json:"y"`
+	}
+
+	tile := tileResponse{Color: color, X: x, Y: y}
+	resp, err := json.Marshal(tile)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(resp)
+	return
+}
+
+func updateTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	if !verifyRoute(w, r, http.MethodPost, "/tile") {
 		return
 	}
