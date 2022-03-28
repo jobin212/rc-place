@@ -49,6 +49,9 @@ func main() {
 	http.HandleFunc("/tiles", func(w http.ResponseWriter, r *http.Request) {
 		getTiles(hub, w, r)
 	})
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		serveFavicon(hub, w, r)
+	})
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		session, err := getSession(r)
 		if err != nil {

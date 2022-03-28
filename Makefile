@@ -17,3 +17,7 @@ clean:
 .PHONY: test
 test:
 	$(GO) test ./...
+
+.PHONY: redis
+redis:
+	docker run --name rc-place-redis -d -p 6379:6379 redis

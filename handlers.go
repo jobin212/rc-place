@@ -5,6 +5,9 @@ import (
 	"embed"
 	"encoding/json"
 	"errors"
+	"image"
+	"image/color"
+	"image/png"
 	"log"
 	"net/http"
 	"os"
@@ -168,6 +171,59 @@ func serveAuth(w http.ResponseWriter, r *http.Request) {
 	session.User = user
 
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+// serveFavicon generates a favicon image from the board.
+func serveFavicon(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	if !verifyRoute(w, r, http.MethodGet, "/favicon.ico") {
+		return
+	}
+	// if no session exists, no favicon
+	if _, err := getSession(r); err != nil {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	// favicon should be a multiple of 48 pixels
+	const width, height = 96, 96
+	// TODO: sync this map with the javascript in home.html
+	colorMap := map[int]color.NRGBA{
+		0:  {0x00, 0x00, 0x00, 0xff},
+		1:  {0x00, 0x55, 0x00, 0xff},
+		2:  {0x00, 0xab, 0x00, 0xff},
+		3:  {0x00, 0xff, 0x00, 0xff},
+		4:  {0x00, 0x00, 0xff, 0xff},
+		5:  {0x64, 0x95, 0xed, 0xff},
+		6:  {0x00, 0xab, 0xff, 0xff},
+		7:  {0x00, 0xff, 0xff, 0xff},
+		8:  {0xff, 0x00, 0x00, 0xff},
+		9:  {0xff, 0x55, 0x00, 0xff},
+		10: {0xff, 0xab, 0x00, 0xff},
+		11: {0xff, 0xff, 0x00, 0xff},
+		12: {0xff, 0x00, 0xff, 0xff},
+		13: {0xff, 0x55, 0xff, 0xff},
+		14: {0xff, 0xab, 0xff, 0xff},
+		15: {0xff, 0xff, 0xff, 0xff},
+	}
+
+	// Create a colored image of the given width and height.
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+
+	// set pixels from our board
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			colorID := hub.board[y][x]
+			// map color ID to RGBA
+			img.Set(x, y, colorMap[colorID])
+		}
+	}
+
+	// encode the png
+	if err := png.Encode(w, img); err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 // getSession is a helper function to get the session struct from the request
