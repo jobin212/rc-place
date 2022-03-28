@@ -5,8 +5,13 @@ Create a personal access token on [https://www.recurse.com/settings/apps](https:
 
 
 ```shell
-# Load your environmental variables after setting them
+# Load your environmental variables after setting them.
 🎨 source .env.example
 
+# Run shell bot
+🎨 ./rc.sh
 
+# Run python bot
+🎨 python3 rc.py
 ```
+
