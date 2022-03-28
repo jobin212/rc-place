@@ -15,4 +15,5 @@ Create a personal access token on [https://www.recurse.com/settings/apps](https:
 ```
 
 ## Tips
-- There's a 1 second timeout for placing tiles. Speed up testing by updating `updateLimit` in [client.go](../client.go) and [running locally](../README.md).
+- There's a 1 second timeout for placing tiles. Speed up testing by updating `updateLimit` in [client.go](../client.go) and [running locally](../README.md#build-and-run).
+- Take a look at the [API](../README.md#rest-api)
