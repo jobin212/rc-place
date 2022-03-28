@@ -33,7 +33,7 @@ type Hub struct {
 
 	// board is an in-memory representation of the board
 	// where each entry is a javascript color
-	board [][]string
+	board [][]int
 }
 
 func newHub() *Hub {
@@ -42,7 +42,7 @@ func newHub() *Hub {
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
-		board:      make([][]string, boardSize),
+		board:      make([][]int, boardSize),
 	}
 
 	bytes, err := redisClient.Get(context.Background(), os.Getenv("REDIS_BOARD_KEY")).Bytes()
@@ -71,15 +71,14 @@ func newHub() *Hub {
 
 	// initialize board
 	for i := 0; i < len(hub.board); i++ {
-		hub.board[i] = make([]string, boardSize)
+		hub.board[i] = make([]int, boardSize)
 	}
 
-	// TODO update board to use ints
 	for i := 0; i < len(bytes); i++ {
 		firstColor, secondColor := getColorsFromByte(bytes[i])
 
-		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))] = strconv.Itoa(firstColor)
-		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))+1] = strconv.Itoa(secondColor)
+		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))] = firstColor
+		hub.board[i/(boardSize/2)][2*(i%(boardSize/2))+1] = secondColor
 	}
 
 	return hub
@@ -123,8 +122,8 @@ func (h *Hub) parseAndSave(message []byte) error {
 		return errors.New("malformed message")
 	}
 
-	x, y, color := parts[0], parts[1], parts[2]
-	var xPos, yPos int
+	x, y, c := parts[0], parts[1], parts[2]
+	var xPos, yPos, color int
 	var err error
 
 	// convert to integers
@@ -132,6 +131,9 @@ func (h *Hub) parseAndSave(message []byte) error {
 		return err
 	}
 	if yPos, err = strconv.Atoi(y); err != nil {
+		return err
+	}
+	if color, err = strconv.Atoi(c); err != nil {
 		return err
 	}
 
@@ -143,7 +145,7 @@ func (h *Hub) parseAndSave(message []byte) error {
 	h.board[yPos][xPos] = color
 	offset := yPos*boardSize + xPos
 
-	_, err = redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), color).Result()
+	_, err = redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), c).Result()
 	if err != nil {
 		return err
 	}

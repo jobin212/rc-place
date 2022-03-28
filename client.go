@@ -144,7 +144,7 @@ func (c *Client) writePump() {
 	}
 	for y := range c.hub.board {
 		for x := range c.hub.board[y] {
-			msg := fmt.Sprintf("%d %d %s\n", x, y, c.hub.board[y][x])
+			msg := fmt.Sprintf("%d %d %d\n", x, y, c.hub.board[y][x])
 			w.Write([]byte(msg))
 		}
 	}
