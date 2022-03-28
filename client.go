@@ -115,6 +115,15 @@ func (c *Client) readPump() {
 		}
 		// TODO: structured commands
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+
+		// Try to parse message and send board if so.
+		if string(message) == "getTiles" {
+			if err = c.conn.WriteJSON(c.hub.board); err != nil {
+				log.Println("uh oh, failed to send board:", err)
+			}
+			continue
+		}
+
 		// check if this user can send a message
 		if time.Since(lastUpdateCache[c.user.Username]) < updateLimit {
 			continue
