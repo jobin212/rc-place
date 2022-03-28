@@ -53,12 +53,12 @@ Update the color of a tile located at column x, row y.
 * **Data Params:**
 ```json
 {
-    "x": int,
-    "y": int,
-    "color": string
+    "x": 2,
+    "y": 4,
+    "color": "red"
 }
 ```
-Valid colors: `black`, `forest`, `green`, `lime`,          `blue`, `cornflowerblue`, `sky`, `cyan`, `red`, `burnt-orange`, `orange`, `yellow`, `purple`, `hot-pink`, `pink`, `white`.
+Valid colors: `black`, `forest`, `green`, `lime`, `blue`, `cornflowerblue`, `sky`, `cyan`, `red`, `burnt-orange`, `orange`, `yellow`, `purple`, `hot-pink`, `pink`, `white`.
 
 * **Success Response:** 200
 * **Error Response**
@@ -84,7 +84,9 @@ Get all tiles.
 * **Success Response:** 200
 ```json 
 {
-  // 2d array of integers representing board state
+  "tiles" : [[1, 2], [3, 4]],
+  "height": 2,
+  "width": 2
 }
 ```
 * **Error Response**
