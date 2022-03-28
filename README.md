@@ -99,21 +99,3 @@ Get all tiles.
 ```shell
 🎨 curl http://localhost:8080/tiles -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
 ```
-
-
-
-
-
-## TODO
-- Follow up on other architecture decisions detailed in [How We Built r/place](https://www.redditinc.com/blog/how-we-built-rplace), e.g. Redis
-- Add API to load entire board state, update frontend to follow
-- Make board big (1000 x 1000) and full screen
-- Add user information to tiles -- who placed what tile
-- Add github actions
-- Generate timelapse (use a timeseries db -- influxdb?)
-- Formal websockets message
-- Give web client a message or timer until they can place again -- e.g. you have 0.4 s until you can update
-- Load testing
-- Token server?
-- Queue up changes and apply them all at midnight?
-- SSH clients
