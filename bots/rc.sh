@@ -2,7 +2,7 @@
 
 TARGET='https://rc-place.fly.dev'
 # TARGET='http://localhost:8080'
-TIMEOUT='1s'
+TIMEOUT='2'
 
 tiles=(
     "black black black black black black black black black black black black"
@@ -25,7 +25,7 @@ tiles=(
 function set-tile {
     curl "$TARGET/tile" \
         -d '{"x": '"$1"', "y": '"$2"', "color": "'"$3"'"}' \
-        -H "Authorization: Bearer $TOKEN"
+        -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
 }
 
 function set-tile-sleep {
@@ -42,6 +42,7 @@ for row in "${tiles[@]}"; do
             continue
         fi
         set-tile-sleep "$x" "$y" "$tile"
+        echo $x $y
     done
     y=$(( y + 1 ))
 done
