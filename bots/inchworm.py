@@ -4,12 +4,13 @@ from threading import local
 import requests
 import os
 import time
+import sys
 
 prod_url = "https://rc-place.fly.dev/tile"
 local_url = "http://localhost:8080/tile"
 
 # Wait period between API calls in seconds
-timeout = 1.1
+timeout = 0.011
 
 def set_tile(x, y, color):
     data = { "x": x, "y": y, "color": color}
@@ -22,11 +23,19 @@ def set_tile(x, y, color):
     else:
         print("Tile not placed at (%s,%s) | Status code: %d | Message: %s" % (x, y, resp.status_code, resp.text))
 
-def main():
+def main(args):
+    headX, headY = 75, 25
+    try:
+        headX, headY = int(args[0]), int(args[1])
+    except:
+        print("Invalid x, y values given. Starting inchworm at {0},{1}", headX, headY)
+
     # create inchworm
-    headX, headY, inchworm_length, inchworm_color, default_color = 75, 50, 5, "lime", "cornflowerblue"
-    for y in range(inchworm_length):
-        set_tile(headX, headY + y, inchworm_color)
+    inchworm_length, inchworm_color = 5, "forest"
+    default_color = "cornflowerblue"
+
+    for y in reversed(range(inchworm_length)):
+        set_tile(headX, (headY - y)%100, inchworm_color)
         time.sleep(timeout)
 
     # move inchworm
@@ -38,4 +47,4 @@ def main():
         headY = (headY + 1) % 100
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
