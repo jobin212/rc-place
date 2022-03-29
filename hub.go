@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -130,7 +129,7 @@ func (h *Hub) saveAndCreateWebSocketMessage(message InternalMessage) ([]byte, er
 
 	// update Redis
 	offset := message.Y*boardSize + message.X
-	_, err := redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), strconv.Itoa(message.Color)).Result()
+	_, err := redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), message.Color).Result()
 	if err != nil {
 		return nil, err
 	}
