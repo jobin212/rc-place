@@ -33,6 +33,10 @@ type Hub struct {
 	// board is an in-memory representation of the board
 	// where each entry is a javascript color
 	board [][]int
+
+	// tileInfoBoard is an in-memory represenation of the board
+	// where each each respresents metadata for a tile
+	tileInfoBoard [][]TileInfo
 }
 
 type InternalMessage struct {
@@ -43,13 +47,19 @@ type InternalMessage struct {
 	Timestamp time.Time
 }
 
+type TileInfo struct {
+	User       User
+	LastUpdate time.Time
+}
+
 func newHub() *Hub {
 	hub := &Hub{
-		broadcast:  make(chan *InternalMessage),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
-		board:      make([][]int, boardSize),
+		broadcast:     make(chan *InternalMessage),
+		register:      make(chan *Client),
+		unregister:    make(chan *Client),
+		clients:       make(map[*Client]bool),
+		board:         make([][]int, boardSize),
+		tileInfoBoard: make([][]TileInfo, boardSize),
 	}
 
 	bytes, err := redisClient.Get(context.Background(), os.Getenv("REDIS_BOARD_KEY")).Bytes()
@@ -76,9 +86,10 @@ func newHub() *Hub {
 		}
 	}
 
-	// initialize board
-	for i := 0; i < len(hub.board); i++ {
+	// initialize boards
+	for i := 0; i < boardSize; i++ {
 		hub.board[i] = make([]int, boardSize)
+		hub.tileInfoBoard[i] = make([]TileInfo, boardSize)
 	}
 
 	for i := 0; i < len(bytes); i++ {
@@ -123,8 +134,9 @@ func (h *Hub) run() {
 // parseAndSave parses a message into x, y, and color and saves it to
 // the board
 func (h *Hub) saveAndCreateWebSocketMessage(message InternalMessage) ([]byte, error) {
-	// update internal board, user cache
+	// update internal boards, user cache
 	h.board[message.Y][message.X] = message.Color
+	h.tileInfoBoard[message.Y][message.X] = TileInfo{User: message.User, LastUpdate: message.Timestamp}
 	lastUpdateCache[message.User.Username] = message.Timestamp
 
 	// update Redis
