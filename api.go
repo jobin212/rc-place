@@ -8,6 +8,12 @@ import (
 	"strconv"
 )
 
+type tileResponse struct {
+	Color string `json:"color"`
+	X     int    `json:"x"`
+	Y     int    `json:"y"`
+}
+
 // pacCache is a personal access token cache used by the /tile API
 var pacCache = map[string]*User{}
 
@@ -24,7 +30,6 @@ func getTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	if !verifyRoute(w, r, http.MethodGet, "/tile") {
 		return
 	}
-	// TODO: respond with JSON bodies always
 
 	// authenticate
 	_, err := authPersonalAccessToken(r)
@@ -50,15 +55,9 @@ func getTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	color := hub.board[x][y]
+	color := hub.board[y][x]
 
-	type tileResponse struct {
-		Color int `json:"color"` // TODO update to color string?
-		X     int `json:"x"`
-		Y     int `json:"y"`
-	}
-
-	tile := tileResponse{Color: color, X: x, Y: y}
+	tile := tileResponse{Color: colorToName[color], X: x, Y: y}
 	resp, err := json.Marshal(tile)
 
 	if err != nil {
