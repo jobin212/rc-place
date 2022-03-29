@@ -17,7 +17,7 @@ type tileResponse struct {
 // pacCache is a personal access token cache used by the /tile API
 var pacCache = map[string]*User{}
 
-// serveTile serves the '/tile' API route for programatically updating a tile.
+// serveTile serves the '/tile' API route for programatically getting or updating a tile.
 func serveTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		updateTile(hub, w, r)
