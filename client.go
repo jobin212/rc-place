@@ -247,8 +247,7 @@ func serveWs(hub *Hub, user *User, w http.ResponseWriter, r *http.Request) {
 }
 
 func createInternalMessage(message string, user User, timestamp time.Time) (*InternalMessage, error) {
-	s := string(message)
-	parts := strings.Split(s, " ")
+	parts := strings.Fields(message)
 
 	if len(parts) < 3 {
 		// do nothing if we don't have enough information from the message
@@ -275,8 +274,8 @@ func createInternalMessage(message string, user User, timestamp time.Time) (*Int
 		return nil, err
 	}
 
-	if _, ok := colorToName[color]; ok {
-		return nil, errors.New("unkonwn color int")
+	if _, ok := colorToName[color]; !ok {
+		return nil, errors.New("unknown color int")
 	}
 
 	internalMessage := &InternalMessage{X: xPos, Y: yPos, Color: color, User: user, Timestamp: timestamp}
