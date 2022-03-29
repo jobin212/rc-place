@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // pacCache is a personal access token cache used by the /tile API
@@ -53,12 +54,14 @@ func getTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	color := hub.board[x][y]
 
 	type tileResponse struct {
-		Color int `json:"color"` // TODO update to color string?
-		X     int `json:"x"`
-		Y     int `json:"y"`
+		Color       int       `json:"color"` // TODO update to color string?
+		X           int       `json:"x"`
+		Y           int       `json:"y"`
+		LastUpdated time.Time `json:"lastUpdated"`
+		LastEditor  string    `json:"lastEditor"`
 	}
 
-	tile := tileResponse{Color: color, X: x, Y: y}
+	tile := tileResponse{Color: color, X: x, Y: y, LastUpdated: hub.tileInfoBoard[x][y].LastUpdate, LastEditor: hub.tileInfoBoard[x][y].User.Username}
 	resp, err := json.Marshal(tile)
 
 	if err != nil {

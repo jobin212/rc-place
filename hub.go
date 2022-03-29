@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -23,7 +23,7 @@ type Hub struct {
 	clients map[*Client]bool
 
 	// Inbound messages from the clients.
-	broadcast chan []byte
+	broadcast chan *InternalMessage
 
 	// Register requests from the clients.
 	register chan *Client
@@ -34,15 +34,25 @@ type Hub struct {
 	// board is an in-memory representation of the board
 	// where each entry is a javascript color
 	board [][]int
+
+	// tileInfoBoard is an in-memory represenation of the board
+	// where each each respresents metadata for a tile
+	tileInfoBoard [][]TileInfo
+}
+
+type TileInfo struct {
+	User       User
+	LastUpdate time.Time
 }
 
 func newHub() *Hub {
 	hub := &Hub{
-		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
-		board:      make([][]int, boardSize),
+		broadcast:     make(chan *InternalMessage),
+		register:      make(chan *Client),
+		unregister:    make(chan *Client),
+		clients:       make(map[*Client]bool),
+		board:         make([][]int, boardSize),
+		tileInfoBoard: make([][]TileInfo, boardSize),
 	}
 
 	bytes, err := redisClient.Get(context.Background(), os.Getenv("REDIS_BOARD_KEY")).Bytes()
@@ -69,9 +79,10 @@ func newHub() *Hub {
 		}
 	}
 
-	// initialize board
-	for i := 0; i < len(hub.board); i++ {
+	// initialize boards
+	for i := 0; i < boardSize; i++ {
 		hub.board[i] = make([]int, boardSize)
+		hub.tileInfoBoard[i] = make([]TileInfo, boardSize)
 	}
 
 	for i := 0; i < len(bytes); i++ {
@@ -96,12 +107,13 @@ func (h *Hub) run() {
 			}
 		case message := <-h.broadcast:
 			// parse and set color in memory
-			if err := h.parseAndSave(message); err != nil {
+			webSocketMessage, err := h.parseAndSave(*message)
+			if err != nil {
 				log.Println(err)
 			}
 			for client := range h.clients {
 				select {
-				case client.send <- message:
+				case client.send <- webSocketMessage:
 				default:
 					close(client.send)
 					delete(h.clients, client)
@@ -113,44 +125,17 @@ func (h *Hub) run() {
 
 // parseAndSave parses a message into x, y, and color and saves it to
 // the board
-func (h *Hub) parseAndSave(message []byte) error {
-	s := string(message)
-	parts := strings.Split(s, " ")
+func (h *Hub) parseAndSave(message InternalMessage) ([]byte, error) {
+	h.board[message.Y][message.X] = message.Color
+	h.tileInfoBoard[message.Y][message.X] = TileInfo{User: message.User, LastUpdate: message.Timestamp}
 
-	if len(parts) < 3 {
-		// do nothing if we don't have enough information from the message
-		return errors.New("malformed message")
-	}
-
-	x, y, c := parts[0], parts[1], parts[2]
-	var xPos, yPos, color int
-	var err error
-
-	// convert to integers
-	if xPos, err = strconv.Atoi(x); err != nil {
-		return err
-	}
-	if yPos, err = strconv.Atoi(y); err != nil {
-		return err
-	}
-	if color, err = strconv.Atoi(c); err != nil {
-		return err
-	}
-
-	// check bounds
-	if err = isInBounds(xPos, yPos); err != nil {
-		return err
-	}
-
-	h.board[yPos][xPos] = color
-	offset := yPos*boardSize + xPos
-
-	_, err = redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), c).Result()
+	offset := message.Y*boardSize + message.X
+	_, err := redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), strconv.Itoa(message.Color)).Result()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return []byte(fmt.Sprintf("%d %d %d\n", message.X, message.Y, message.Color)), nil
 }
 
 func isInBounds(x, y int) error {
