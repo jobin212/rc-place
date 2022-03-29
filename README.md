@@ -88,9 +88,11 @@ Get all tiles.
 {
   "tiles" : [[1, 2], [3, 4]],
   "height": 2,
-  "width": 2
+  "width": 2,
+  "updateLimitInMs": 10
 }
 ```
+Note updateLimit is the update limit in milliseconds.
 * **Error Response**
   * **Code** 401 Unauthorized <br />
     * Make sure you have a valid personal access token in your authorization header.
