@@ -275,8 +275,8 @@ func createInternalMessage(message string, user User, timestamp time.Time) (*Int
 		return nil, err
 	}
 
-	if color < 0 || color >= len(nameToColor) {
-		return nil, errors.New("Color out of bounds")
+	if _, ok := colorToName[color]; ok {
+		return nil, errors.New("unkonwn color int")
 	}
 
 	internalMessage := &InternalMessage{X: xPos, Y: yPos, Color: color, User: user, Timestamp: timestamp}
