@@ -51,6 +51,8 @@ Update the color of a tile located at column x, row y.
 * **URL:** /tile
 * **Method:** `POST`
 * **Data Params:**
+
+Request Body
 ```json
 {
     "x": 2,
@@ -100,20 +102,37 @@ Get all tiles.
 🎨 curl http://localhost:8080/tiles -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
 ```
 
+### Get tile
+----
+Get a tile.
+* **URL:** /tile
+* **Method:** `GET`
+* **Data Params:**
 
+Query Parameters
+  - x: column
+  - y: row
 
+Constraints:
+- 0 <= x < BOARD_SIZE
+- 0 <= y < BOARD_SIZE
+* **Success Response:** 200
+```json
+{
+  "color" : "red",
+  "x": 2,
+  "y": 2
+}
+```
+* **Error Response**
+  * **Code** 400 Bad Request <br />
+    * Invalid query parms: make sure you're using the valid query parameters within boundaries.
+  * **Code** 401 Unauthorized <br />
+    * Make sure you have a valid personal access token in your authorization header.
+  * **Code** 500 Internal Server Error <br />
+    * You may have found a bug! You're encourage to file an issue with the steps to reproduce.
 
-
-## TODO
-- Follow up on other architecture decisions detailed in [How We Built r/place](https://www.redditinc.com/blog/how-we-built-rplace), e.g. Redis
-- Add API to load entire board state, update frontend to follow
-- Make board big (1000 x 1000) and full screen
-- Add user information to tiles -- who placed what tile
-- Add github actions
-- Generate timelapse (use a timeseries db -- influxdb?)
-- Formal websockets message
-- Give web client a message or timer until they can place again -- e.g. you have 0.4 s until you can update
-- Load testing
-- Token server?
-- Queue up changes and apply them all at midnight?
-- SSH clients
+* **Sample Call**
+```shell
+🎨 curl http://localhost:8080/tile?x=15&y=3 -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
+```

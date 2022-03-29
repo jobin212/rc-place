@@ -33,12 +33,50 @@ var (
 	space   = []byte{' '}
 
 	lastUpdateCache = map[string]time.Time{}
-)
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
+	nameToColor = map[string]int{
+		"black":          0,
+		"forest":         1,
+		"green":          2,
+		"lime":           3,
+		"blue":           4,
+		"cornflowerblue": 5,
+		"sky":            6,
+		"cyan":           7,
+		"red":            8,
+		"burnt-orange":   9,
+		"orange":         10,
+		"yellow":         11,
+		"purple":         12,
+		"hot-pink":       13,
+		"pink":           14,
+		"white":          15,
+	}
+
+	colorToName = map[int]string{
+		0:  "black",
+		1:  "forest",
+		2:  "green",
+		3:  "lime",
+		4:  "blue",
+		5:  "cornflowerblue",
+		6:  "sky",
+		7:  "cyan",
+		8:  "red",
+		9:  "burnt-orange",
+		10: "orange",
+		11: "yellow",
+		12: "purple",
+		13: "hot-pink",
+		14: "pink",
+		15: "white",
+	}
+)
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
@@ -64,24 +102,6 @@ func (u *User) SetTile(hub *Hub, x, y int, color string) error {
 		return errors.New("rate limited")
 	}
 	// validate color
-	nameToColor := map[string]int{
-		"black":          0,
-		"forest":         1,
-		"green":          2,
-		"lime":           3,
-		"blue":           4,
-		"cornflowerblue": 5,
-		"sky":            6,
-		"cyan":           7,
-		"red":            8,
-		"burnt-orange":   9,
-		"orange":         10,
-		"yellow":         11,
-		"purple":         12,
-		"hot-pink":       13,
-		"pink":           14,
-		"white":          15,
-	}
 	colInt, ok := nameToColor[color]
 	if !ok {
 		return errors.New("unknown color")

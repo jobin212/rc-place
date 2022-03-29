@@ -138,8 +138,8 @@ func (h *Hub) parseAndSave(message []byte) error {
 	}
 
 	// check bounds
-	if yPos < 0 || xPos < 0 || yPos >= len(h.board) || xPos >= len(h.board[yPos]) {
-		return errors.New("out of bounds")
+	if err = isInBounds(xPos, yPos); err != nil {
+		return err
 	}
 
 	h.board[yPos][xPos] = color
@@ -150,5 +150,12 @@ func (h *Hub) parseAndSave(message []byte) error {
 		return err
 	}
 
+	return nil
+}
+
+func isInBounds(x, y int) error {
+	if y < 0 || x < 0 || y >= boardSize || x >= boardSize {
+		return errors.New("out of bounds")
+	}
 	return nil
 }
