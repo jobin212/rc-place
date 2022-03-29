@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -135,14 +134,14 @@ func (h *Hub) run() {
 // parseAndSave parses a message into x, y, and color and saves it to
 // the board
 func (h *Hub) saveAndCreateWebSocketMessage(message InternalMessage) ([]byte, error) {
-	// update internal board, user cache
+	// update internal boards, user cache
 	h.board[message.Y][message.X] = message.Color
 	h.tileInfoBoard[message.Y][message.X] = TileInfo{User: message.User, LastUpdate: message.Timestamp}
 	lastUpdateCache[message.User.Username] = message.Timestamp
 
 	// update Redis
 	offset := message.Y*boardSize + message.X
-	_, err := redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), strconv.Itoa(message.Color)).Result()
+	_, err := redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), message.Color).Result()
 	if err != nil {
 		return nil, err
 	}
