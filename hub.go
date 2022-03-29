@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"strings"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -23,7 +22,7 @@ type Hub struct {
 	clients map[*Client]bool
 
 	// Inbound messages from the clients.
-	broadcast chan []byte
+	broadcast chan *InternalMessage
 
 	// Register requests from the clients.
 	register chan *Client
@@ -36,9 +35,17 @@ type Hub struct {
 	board [][]int
 }
 
+type InternalMessage struct {
+	X         int
+	Y         int
+	Color     int
+	User      User
+	Timestamp time.Time
+}
+
 func newHub() *Hub {
 	hub := &Hub{
-		broadcast:  make(chan []byte),
+		broadcast:  make(chan *InternalMessage),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
@@ -96,12 +103,14 @@ func (h *Hub) run() {
 			}
 		case message := <-h.broadcast:
 			// parse and set color in memory
-			if err := h.parseAndSave(message); err != nil {
+			webSocketsMessage, err := h.saveAndCreateWebSocketMessage(*message)
+			if err != nil {
 				log.Println(err)
+				break
 			}
 			for client := range h.clients {
 				select {
-				case client.send <- message:
+				case client.send <- webSocketsMessage:
 				default:
 					close(client.send)
 					delete(h.clients, client)
@@ -113,44 +122,20 @@ func (h *Hub) run() {
 
 // parseAndSave parses a message into x, y, and color and saves it to
 // the board
-func (h *Hub) parseAndSave(message []byte) error {
-	s := string(message)
-	parts := strings.Split(s, " ")
+func (h *Hub) saveAndCreateWebSocketMessage(message InternalMessage) ([]byte, error) {
+	// update internal board, user cache
+	h.board[message.Y][message.X] = message.Color
+	lastUpdateCache[message.User.Username] = message.Timestamp
 
-	if len(parts) < 3 {
-		// do nothing if we don't have enough information from the message
-		return errors.New("malformed message")
-	}
-
-	x, y, c := parts[0], parts[1], parts[2]
-	var xPos, yPos, color int
-	var err error
-
-	// convert to integers
-	if xPos, err = strconv.Atoi(x); err != nil {
-		return err
-	}
-	if yPos, err = strconv.Atoi(y); err != nil {
-		return err
-	}
-	if color, err = strconv.Atoi(c); err != nil {
-		return err
-	}
-
-	// check bounds
-	if err = isInBounds(xPos, yPos); err != nil {
-		return err
-	}
-
-	h.board[yPos][xPos] = color
-	offset := yPos*boardSize + xPos
-
-	_, err = redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), c).Result()
+	// update Redis
+	offset := message.Y*boardSize + message.X
+	_, err := redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), message.Color).Result()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	// return websocket message to be sent on channel
+	return []byte(fmt.Sprintf("%d %d %d\n", message.X, message.Y, message.Color)), nil
 }
 
 func isInBounds(x, y int) error {

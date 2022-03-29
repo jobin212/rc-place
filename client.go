@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -106,9 +108,14 @@ func (u *User) SetTile(hub *Hub, x, y int, color string) error {
 	if !ok {
 		return errors.New("unknown color")
 	}
-	// TODO: refactor message type
-	hub.broadcast <- []byte(fmt.Sprintf("%d %d %d", x, y, colInt))
-	lastUpdateCache[u.Username] = time.Now()
+
+	internalMessage, err := createInternalMessage(fmt.Sprintf("%d %d %d", x, y, colInt), *u, time.Now())
+	if err != nil {
+		log.Println("Failed to createInternalMessage")
+		return err
+	}
+
+	hub.broadcast <- internalMessage
 	return nil
 }
 
@@ -126,7 +133,7 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, message, err := c.conn.ReadMessage()
+		_, webSocketMessage, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
@@ -134,10 +141,11 @@ func (c *Client) readPump() {
 			break
 		}
 		// TODO: structured commands
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		webSocketMessage = bytes.TrimSpace(bytes.Replace(webSocketMessage, newline, space, -1))
 
+		message := string(webSocketMessage)
 		// Try to parse message and send board if so.
-		if string(message) == "getTiles" {
+		if message == "getTiles" {
 			if err = c.conn.WriteJSON(c.hub.board); err != nil {
 				log.Println("uh oh, failed to send board:", err)
 			}
@@ -148,8 +156,14 @@ func (c *Client) readPump() {
 		if time.Since(lastUpdateCache[c.user.Username]) < updateLimit {
 			continue
 		}
-		lastUpdateCache[c.user.Username] = time.Now()
-		c.hub.broadcast <- message
+
+		internalMessage, err := createInternalMessage(message, *c.user, time.Now())
+		if err != nil {
+			log.Printf("Failed to createInternalMessage %v\n", err)
+			continue
+		}
+
+		c.hub.broadcast <- internalMessage
 	}
 }
 
@@ -230,4 +244,41 @@ func serveWs(hub *Hub, user *User, w http.ResponseWriter, r *http.Request) {
 	// new goroutines.
 	go client.writePump()
 	go client.readPump()
+}
+
+func createInternalMessage(message string, user User, timestamp time.Time) (*InternalMessage, error) {
+	parts := strings.Fields(message)
+
+	if len(parts) < 3 {
+		// do nothing if we don't have enough information from the message
+		return nil, errors.New("malformed message")
+	}
+
+	x, y, c := parts[0], parts[1], parts[2]
+	var xPos, yPos, color int
+	var err error
+
+	// convert to integers
+	if xPos, err = strconv.Atoi(x); err != nil {
+		return nil, err
+	}
+	if yPos, err = strconv.Atoi(y); err != nil {
+		return nil, err
+	}
+	if color, err = strconv.Atoi(c); err != nil {
+		return nil, err
+	}
+
+	// check bounds
+	if err = isInBounds(xPos, yPos); err != nil {
+		return nil, err
+	}
+
+	if _, ok := colorToName[color]; !ok {
+		return nil, errors.New("unknown color int")
+	}
+
+	internalMessage := &InternalMessage{X: xPos, Y: yPos, Color: color, User: user, Timestamp: timestamp}
+
+	return internalMessage, nil
 }
