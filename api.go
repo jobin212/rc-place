@@ -40,10 +40,10 @@ func getTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := r.URL.Query()
-	x, err := strconv.Atoi(query.Get("x"))
-	y, err := strconv.Atoi(query.Get("y"))
+	x, errX := strconv.Atoi(query.Get("x"))
+	y, errY := strconv.Atoi(query.Get("y"))
 
-	if err != nil {
+	if errX != nil || errY != nil {
 		log.Println("Missing or malformed query parameter")
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
