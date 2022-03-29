@@ -104,9 +104,10 @@ func (h *Hub) run() {
 			}
 		case message := <-h.broadcast:
 			// parse and set color in memory
-			webSocketsMessage, err := h.saveAndCreateWebSocketsMessage(*message)
+			webSocketsMessage, err := h.saveAndCreateWebSocketMessage(*message)
 			if err != nil {
 				log.Println(err)
+				break
 			}
 			for client := range h.clients {
 				select {
@@ -122,15 +123,18 @@ func (h *Hub) run() {
 
 // parseAndSave parses a message into x, y, and color and saves it to
 // the board
-func (h *Hub) saveAndCreateWebSocketsMessage(message InternalMessage) ([]byte, error) {
+func (h *Hub) saveAndCreateWebSocketMessage(message InternalMessage) ([]byte, error) {
+	// update internal board
 	h.board[message.Y][message.X] = message.Color
-	offset := message.Y*boardSize + message.X
 
+	// update Redis
+	offset := message.Y*boardSize + message.X
 	_, err := redisClient.BitField(context.Background(), os.Getenv("REDIS_BOARD_KEY"), "SET", "u4", fmt.Sprintf("#%d", offset), strconv.Itoa(message.Color)).Result()
 	if err != nil {
 		return nil, err
 	}
 
+	// return websocket message to be sent on channel
 	return []byte(fmt.Sprintf("%d %d %d\n", message.X, message.Y, message.Color)), nil
 }
 
