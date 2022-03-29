@@ -27,7 +27,7 @@ const (
 	maxMessageSize = 512
 
 	// Time before a user can update the canvas again.
-	updateLimit = 1 * time.Second
+	updateLimit = 10 * time.Millisecond
 )
 
 var (
