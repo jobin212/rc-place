@@ -279,7 +279,6 @@ func createInternalMessage(message string, user User, timestamp time.Time) (*Int
 		return nil, errors.New("Color out of bounds")
 	}
 
-	lastUpdateCache[user.Username] = timestamp
 	internalMessage := &InternalMessage{X: xPos, Y: yPos, Color: color, User: user, Timestamp: timestamp}
 
 	return internalMessage, nil

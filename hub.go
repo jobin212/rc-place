@@ -124,8 +124,9 @@ func (h *Hub) run() {
 // parseAndSave parses a message into x, y, and color and saves it to
 // the board
 func (h *Hub) saveAndCreateWebSocketMessage(message InternalMessage) ([]byte, error) {
-	// update internal board
+	// update internal board, user cache
 	h.board[message.Y][message.X] = message.Color
+	lastUpdateCache[message.User.Username] = message.Timestamp
 
 	// update Redis
 	offset := message.Y*boardSize + message.X
