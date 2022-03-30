@@ -32,6 +32,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// setup postgres connection
+	if err := setupPostgresConnection(); err != nil {
+		log.Println("Error setting up postgres:", err) // TODO make postgres not required
+	}
+	defer postgresClient.Close()
+
 	// setup redis connection
 	if err := setupRedisClient(); err != nil {
 		log.Println("Error setting up redis:", err)
@@ -61,6 +67,7 @@ func main() {
 		serveWs(hub, &session.User, w, r)
 	})
 	log.Printf("Running on port %s\n", *addr)
+
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

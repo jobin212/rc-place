@@ -60,7 +60,13 @@ func getTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	color := hub.board[y][x]
 
-	tile := tileResponse{Color: colorToName[color], X: x, Y: y, LastUpdated: hub.tileInfoBoard[y][x].LastUpdate, LastEditor: hub.tileInfoBoard[y][x].User.Username}
+	var timestamp time.Time
+	var username string
+	if err = postgresClient.QueryRow("SELECT username, timestamp FROM tile_info WHERE x = $1 AND y = $2", x, y).Scan(&username, &timestamp); err != nil {
+		log.Printf("QueryRow failed: %v\n", err)
+	}
+
+	tile := tileResponse{Color: colorToName[color], X: x, Y: y, LastUpdated: timestamp, LastEditor: username}
 	resp, err := json.Marshal(tile)
 
 	if err != nil {
