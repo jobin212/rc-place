@@ -24,7 +24,7 @@
                 "9": "#ff5500",
                 "10": "#ffab00",
                 "11": "#ffff00",
-                "12": "#ff00ff",
+                "12": "#6a0dad",
                 "13": "#ff55ff",
                 "14": "#ffabff",
                 "15": "#ffffff"
@@ -43,7 +43,7 @@
                 "#ff5500": "burnt-orange",
                 "#ffab00": "orange",
                 "#ffff00": "yellow",
-                "#ff00ff": "purple",
+                "#6a0dad": "purple",
                 "#ff55ff": "hot-pink",
                 "#ffabff": "pink",
                 "#ffffff": "white",
@@ -93,7 +93,7 @@
                 let { x, y } = getCursorPosition(canvas, e)
                 var p = ctx.getImageData(tileSize * x + 2, tileSize * y, tileSize, tileSize).data
                 var hex = "#" + ("000000" + rgbToHex(p[0], p[1], p[2])).slice(-6)
-                console.log(hexToName[hex])
+                document.getElementById('x-y').innerText = x + ", " + y + " | " + hexToName[hex];
             })
 
             function setColor(x, y, c) {
@@ -243,7 +243,6 @@
 
 <body>
     <canvas id="canvas" width="402" height="402"></canvas>
-
     <div id="input">
         <form id="form">
             <div class="palette" id="palette">
@@ -311,6 +310,9 @@
                     <input type="radio" name="color" value="white">
                     <span style="background-color: white;"></span>
                 </label>
+                <div>
+                    <label id="x-y"></label>
+                </div>
             </div>
         </form>
     </div>
