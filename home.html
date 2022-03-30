@@ -24,10 +24,29 @@
                 "9": "#ff5500",
                 "10": "#ffab00",
                 "11": "#ffff00",
-                "12": "#ff00ff",
+                "12": "#6a0dad",
                 "13": "#ff55ff",
                 "14": "#ffabff",
                 "15": "#ffffff"
+            }
+
+            const hexToName = {
+                "#000000": "black",
+                "#005500": "forest",
+                "#00ab00": "green",
+                "#00ff00": "lime",
+                "#0000ff": "blue",
+                "#6495ed": "cornflowerblue",
+                "#00abff": "sky",
+                "#00ffff": "cyan",
+                "#ff0000": "red",
+                "#ff5500": "burnt-orange",
+                "#ffab00": "orange",
+                "#ffff00": "yellow",
+                "#6a0dad": "purple",
+                "#ff55ff": "hot-pink",
+                "#ffabff": "pink",
+                "#ffffff": "white",
             }
 
             const nameToColor = {
@@ -56,10 +75,25 @@
                 const rect = canvas.getBoundingClientRect()
                 const x = Math.round((event.clientX - rect.left) / tileSize) - 1;
                 const y = Math.round((event.clientY - rect.top) / tileSize) - 1;
-                sendColor(x, y, color);
+                return { x: x, y: y }
             }
+
+            function rgbToHex(r, g, b) {
+                if (r > 255 || g > 255 || b > 255)
+                    throw "Invalid color component";
+                return ((r << 16) | (g << 8) | b).toString(16);
+            }
+
             canvas.addEventListener('mousedown', function (e) {
-                getCursorPosition(canvas, e)
+                let { x, y } = getCursorPosition(canvas, e)
+                sendColor(x, y, color);
+            })
+
+            canvas.addEventListener('mousemove', function (e) {
+                let { x, y } = getCursorPosition(canvas, e)
+                var p = ctx.getImageData(tileSize * x + 2, tileSize * y, tileSize, tileSize).data
+                var hex = "#" + ("000000" + rgbToHex(p[0], p[1], p[2])).slice(-6)
+                document.getElementById('x-y').innerText = x + ", " + y + " | " + hexToName[hex];
             })
 
             function setColor(x, y, c) {
@@ -103,7 +137,7 @@
             const paletteSquares = document.getElementsByClassName("palette-square");
 
             for (let el of paletteSquares) {
-                el.addEventListener("change", function(event) {
+                el.addEventListener("change", function (event) {
                     if (event.target.checked) {
                         const palette = document.getElementById('palette');
                         palette.style.bordertop
@@ -209,7 +243,6 @@
 
 <body>
     <canvas id="canvas" width="402" height="402"></canvas>
-
     <div id="input">
         <form id="form">
             <div class="palette" id="palette">
@@ -277,6 +310,9 @@
                     <input type="radio" name="color" value="white">
                     <span style="background-color: white;"></span>
                 </label>
+                <div>
+                    <label id="x-y"></label>
+                </div>
             </div>
         </form>
     </div>
