@@ -16,7 +16,7 @@ const (
 	max_y  = 100
 )
 
-var BearerToken string = os.Getenv("RC_TOKEN")
+var BearerToken string = os.Getenv("PERSONAL_ACCESS_TOKEN")
 
 type PixelStruct struct {
 	Color       string    `json:"color"`
