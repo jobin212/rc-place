@@ -27,6 +27,7 @@ type PixelStruct struct {
 }
 
 func main() {
+	checkToken()
 	colorsAvailable := []string{"black", "forest", "green", "lime", "blue", "cornflowerblue", "sky", "cyan", "red", "burnt-orange", "orange", "yellow", "purple", "hot-pink", "pink", "white"}
 	generalColor := getGeneralBoardColor()
 	fmt.Println("Seems like most of the pixels are: ", generalColor)
@@ -34,11 +35,29 @@ func main() {
 	randomColor := randomColorPicker(colorsAvailable)
 	fmt.Println("Changing pixels to: ", randomColor)
 	if generalColor == randomColor {
-		fmt.Println("The general color is the same as the random color, not changing anything")
+		fmt.Println("The general color is the same as the random color, not changing anything.")
 		return
 	}
 
-	updateRandomPixels(generalColor, randomColor, 500)
+	// get user input for number of pixels to update
+	var numPixelsToUpdate int
+	fmt.Println("How many pixels would you like to update?")
+	fmt.Scanf("%d", &numPixelsToUpdate)
+	if numPixelsToUpdate > max_x*max_y {
+		fmt.Println("That's too many pixels, I'm only going to update", max_x*max_y, "pixels.")
+		numPixelsToUpdate = max_x * max_y
+	}
+
+	fmt.Println("Updating pixels...")
+
+	updateRandomPixels(generalColor, randomColor, numPixelsToUpdate)
+}
+
+func checkToken() {
+	if BearerToken == "" {
+		fmt.Println("Please set the environment variable RC_TOKEN")
+		os.Exit(1)
+	}
 }
 
 // function that takes an originating color and updates random pixels to a new given color if it matches the originating color
