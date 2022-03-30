@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -39,7 +38,6 @@ func main() {
 		log.Println("Error setting up postgres:", err)
 		os.Exit(1) // TODO make postgres not required
 	}
-	fmt.Println("Client success")
 	defer postgresClient.Close()
 
 	// setup redis connection
