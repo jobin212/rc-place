@@ -147,12 +147,15 @@ func (h *Hub) saveAndCreateWebSocketMessage(message InternalMessage) ([]byte, er
 	}
 
 	// update postgres
-	postgresClient.Exec(
+	if _, err = postgresClient.Exec(
 		"INSERT INTO tile_info(username, x, y, color) VALUES ($1, $2, $3, $4) ON CONFLICT (x, y) DO UPDATE SET username=excluded.username, timestamp=now(), color=excluded.color",
 		message.User.Username,
 		message.X,
 		message.Y,
-		message.Color)
+		message.Color); err != nil {
+		// Postgres errors should be non-fatal -- continue executing
+		log.Println(err)
+	}
 
 	// return websocket message to be sent on channel
 	return []byte(fmt.Sprintf("%d %d %d\n", message.X, message.Y, message.Color)), nil
