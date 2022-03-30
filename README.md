@@ -88,7 +88,8 @@ Get all tiles.
 {
   "tiles" : [[1, 2], [3, 4]],
   "height": 2,
-  "width": 2
+  "width": 2,
+  "updateLimitInMs": 10
 }
 ```
 * **Error Response**
