@@ -3,10 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
@@ -64,10 +62,8 @@ func getTile(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	var timestamp time.Time
 	var username string
-	err = postgresClient.QueryRow("SELECT username, timestamp FROM tile_info WHERE x = $1 AND y = $2", x, y).Scan(&username, &timestamp)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
+	if err = postgresClient.QueryRow("SELECT username, timestamp FROM tile_info WHERE x = $1 AND y = $2", x, y).Scan(&username, &timestamp); err != nil {
+		log.Printf("QueryRow failed: %v\n", err)
 	}
 
 	tile := tileResponse{Color: colorToName[color], X: x, Y: y, LastUpdated: timestamp, LastEditor: username}
