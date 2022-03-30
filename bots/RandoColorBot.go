@@ -55,7 +55,7 @@ func main() {
 
 func checkToken() {
 	if BearerToken == "" {
-		fmt.Println("Please set the environment variable RC_TOKEN")
+		fmt.Println("Please set the environment variable PERSONAL_ACCESS_TOKEN")
 		os.Exit(1)
 	}
 }
