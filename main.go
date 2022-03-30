@@ -21,7 +21,6 @@ func main() {
 		"REDIS_HOST",     // TODO: make optional; use map if not provided
 		"REDIS_PASSWORD", // TODO: make optional; use map if not provided
 		"REDIS_BOARD_KEY",
-		"PG_DATABASE_URL",
 	} {
 		if _, ok := os.LookupEnv(env); !ok {
 			log.Println("Required environment variable missing:", env)
@@ -35,8 +34,7 @@ func main() {
 
 	// setup postgres connection
 	if err := setupPostgresConnection(); err != nil {
-		log.Println("Error setting up postgres:", err)
-		os.Exit(1) // TODO make postgres not required
+		log.Println("Error setting up postgres:", err) // TODO make postgres not required
 	}
 	defer postgresClient.Close()
 
