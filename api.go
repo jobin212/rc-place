@@ -149,11 +149,11 @@ func getTiles(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	format := query.Get("format")
 
 	var resp []byte
-	if format == "string" {
-		board := tilesResponseStringFormat{Tiles: getBoardAsString(hub.board), Height: boardSize, Width: boardSize, UpdateLimitInMs: updateLimitInMs}
+	if format == "int" {
+		board := tilesResponseIntFormat{Tiles: hub.board, Height: boardSize, Width: boardSize, UpdateLimitInMs: updateLimitInMs}
 		resp, err = json.Marshal(board)
 	} else {
-		board := tilesResponseIntFormat{Tiles: hub.board, Height: boardSize, Width: boardSize, UpdateLimitInMs: updateLimitInMs}
+		board := tilesResponseStringFormat{Tiles: getBoardAsString(hub.board), Height: boardSize, Width: boardSize, UpdateLimitInMs: updateLimitInMs}
 		resp, err = json.Marshal(board)
 	}
 
