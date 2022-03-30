@@ -17,5 +17,11 @@ func setupPostgresConnection() error {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		return err
 	}
-	return postgresClient.Ping()
+
+	if err = postgresClient.Ping(); err != nil {
+		return err
+	}
+
+	_, err = postgresClient.Exec("CREATE TABLE IF NOT EXISTS tile_info (username text, timestamp timestamp DEFAULT now(), x int, y int, color int, UNIQUE(x, y))")
+	return err
 }
