@@ -7,7 +7,7 @@ import os
 import time
 import sys
 
-# url = "https://rc-place.fly.dev/tile"
+# url = "https://rc-place.fly.dev"
 url = "http://localhost:8080"
 default_color = "cornflowerblue"
 

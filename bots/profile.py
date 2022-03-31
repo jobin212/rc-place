@@ -9,7 +9,7 @@ import sys
 from PIL import Image
 from io import BytesIO
 
-# url = "https://rc-place.fly.dev/tile"
+# url = "https://rc-place.fly.dev"
 url = "http://localhost:8080"
 default_color = "cornflowerblue"
 
@@ -56,7 +56,7 @@ def set_tile(x, y, color):
 
 def get_profile_image():
     headers = {'Authorization': 'Bearer ' + os.getenv("PERSONAL_ACCESS_TOKEN")}
-    resp = requests.get(RECURSE_URL, headers=headers)
+    resp = requests.get(recurse_url, headers=headers)
     if resp.status_code == 200:
         resp_body = resp.json()
         return resp_body['image_path']
@@ -105,7 +105,7 @@ def main(args):
     try:
         offsetX, offsetY = int(args[0]), int(args[1])
     except:
-        print("Invalid x, y values given. Starting inchworm at %d,%d" %
+        print("Invalid x, y values given. Starting bot at %d,%d" %
               (offsetX, offsetY))
 
     image_url = get_profile_image()
