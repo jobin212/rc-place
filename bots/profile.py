@@ -69,22 +69,22 @@ def get_image_array_from_url(image_url):
 
         pal_image = Image.new("P", (1, 1))
         pal_image.putpalette((
-            0, 0, 0, #000000
-            0, 85, 0,#005500
-            0, 171, 0, #00ab00
-            0, 255, 0, #00ff00
-            0, 0, 255, #0000ff
-            100, 149, 237, #6495ed
-            0, 171, 255, #00abff
-            0, 255, 255, #00ffff
-            255, 0, 0, #ff0000
-            255, 85, 0, #ff5500
-            255, 171, 0, #ffab00
-            255, 255, 0, #ffff00
-            106, 13, 173, #6a0dad
-            255, 85, 255, #ff55ff
-            255, 171, 255, #ffabff
-            255, 255, 255, #ffffff
+            0, 0, 0,  # 000000
+            0, 85, 0,  # 005500
+            0, 171, 0,  # 00ab00
+            0, 255, 0,  # 00ff00
+            0, 0, 255,  # 0000ff
+            100, 149, 237,  # 6495ed
+            0, 171, 255,  # 00abff
+            0, 255, 255,  # 00ffff
+            255, 0, 0,  # ff0000
+            255, 85, 0,  # ff5500
+            255, 171, 0,  # ffab00
+            255, 255, 0,  # ffff00
+            106, 13, 173,  # 6a0dad
+            255, 85, 255,  # ff55ff
+            255, 171, 255,  # ffabff
+            255, 255, 255,  # ffffff
         )
             + (0, 0, 0) * 240
         )
@@ -103,7 +103,8 @@ def main(args):
     try:
         offsetX, offsetY = int(args[0]), int(args[1])
     except:
-        print("Invalid x, y values given. Starting inchworm at %d,%d" % (offsetX, offsetY))
+        print("Invalid x, y values given. Starting inchworm at %d,%d" %
+              (offsetX, offsetY))
 
     image_url = get_profile_image()
     img_arr = get_image_array_from_url(image_url)
