@@ -12,7 +12,7 @@ from io import BytesIO
 # url = "https://rc-place.fly.dev/tile"
 url = "http://localhost:8080"
 default_color = "cornflowerblue"
-RECURSE_URL = "https://www.recurse.com/api/v1/profiles/jobin212@gmail.com"
+RECURSE_URL = "https://www.recurse.com/api/v1/profiles/me"
 
 # Wait period between API calls in seconds
 timeout = 0.011
