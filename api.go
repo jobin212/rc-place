@@ -17,11 +17,18 @@ type tileResponse struct {
 	LastEditor  string    `json:"lastEditor"`
 }
 
-type tilesResponse struct {
+type tilesResponseIntFormat struct {
 	Tiles           [][]int `json:"tiles"`
 	Height          int     `json:"height"`
 	Width           int     `json:"width"`
 	UpdateLimitInMs int     `json:"updateLimitInMs"`
+}
+
+type tilesResponseStringFormat struct {
+	Tiles           [][]string `json:"tiles"`
+	Height          int        `json:"height"`
+	Width           int        `json:"width"`
+	UpdateLimitInMs int        `json:"updateLimitInMs"`
 }
 
 // pacCache is a personal access token cache used by the /tile API
@@ -138,8 +145,17 @@ func getTiles(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	board := tilesResponse{Tiles: hub.board, Height: boardSize, Width: boardSize, UpdateLimitInMs: updateLimitInMs}
-	resp, err := json.Marshal(board)
+	query := r.URL.Query()
+	format := query.Get("format")
+
+	var resp []byte
+	if format == "int" {
+		board := tilesResponseIntFormat{Tiles: hub.board, Height: boardSize, Width: boardSize, UpdateLimitInMs: updateLimitInMs}
+		resp, err = json.Marshal(board)
+	} else {
+		board := tilesResponseStringFormat{Tiles: getBoardAsString(hub.board), Height: boardSize, Width: boardSize, UpdateLimitInMs: updateLimitInMs}
+		resp, err = json.Marshal(board)
+	}
 
 	if err != nil {
 		log.Println(err)
@@ -192,4 +208,17 @@ func authPersonalAccessToken(r *http.Request) (*User, error) {
 	// update cache
 	pacCache[pacToken] = &user
 	return pacCache[pacToken], nil
+}
+
+func getBoardAsString(board [][]int) [][]string {
+	boardString := make([][]string, boardSize)
+
+	for i := 0; i < boardSize; i++ {
+		boardString[i] = make([]string, boardSize)
+		for j := 0; j < boardSize; j++ {
+			boardString[i][j] = colorToName[board[i][j]]
+		}
+	}
+
+	return boardString
 }
