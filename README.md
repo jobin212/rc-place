@@ -83,6 +83,10 @@ Valid colors: `black`, `forest`, `green`, `lime`, `blue`, `cornflowerblue`, `sky
 Get all tiles.
 * **URL:** /tiles
 * **Method:** `GET`
+* **Data Params:**
+
+Query Parameters
+  - format (OPTIONAL, default "string"): {"int", "string"}
 * **Success Response:** 200
 ```json 
 {
@@ -111,12 +115,9 @@ Get a tile.
 * **Data Params:**
 
 Query Parameters
-  - x: column
-  - y: row
+  - x (REQUIRED): column, 0 <= x < BOARD_SIZE
+  - y (REQUIRED): row, 0 <= y < BOARD_SIZE
 
-Constraints:
-- 0 <= x < BOARD_SIZE
-- 0 <= y < BOARD_SIZE
 * **Success Response:** 200
 ```json
 {
