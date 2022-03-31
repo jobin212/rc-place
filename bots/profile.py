@@ -68,10 +68,23 @@ def get_image_array_from_url(image_url):
         img_resized = img.resize((25, 25))
         # img_resized_intermediate = img_resized.convert(mode='P', colors=16)
         # img_resized_dithered = img_resized_intermediate.convert(mode='P', colors=16, dither=1, palette=Image.ADAPTIVE)
-        img_resized_16 = img_resized.convert('P', palette=Image.ADAPTIVE, colors=16)
-        img_resized_16.save("img1.png")
-        pix = img_resized_16.convert('RGB').load()
-        return pix
+        # img_resized_16 = img_resized.convert('P', palette=Image.ADAPTIVE, colors=16)
+        # img_resized_16.save("img1.png")
+        # pix = img_resized_16.convert('RGB').load()
+
+        pal_image = Image.new("P", (1, 1))
+        pal_image.putpalette(
+            (0,0,0,
+            0,255,0,
+            255,0,0,
+            255, 255, 0)
+            + (0, 0, 0) * 252
+        )
+
+        img_rs_q = img_resized.convert("RGB").quantize(palette=pal_image)
+        img_rs_q.save("img2.png")
+
+        return img_rs_q.convert("RGB").load()
 
 
 def get_color_from_rgb(rgb):
