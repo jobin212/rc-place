@@ -107,13 +107,11 @@ def main(args):
 
     image_url = get_profile_image()
     img_arr = get_image_array_from_url(image_url)
-    color_set = set()
     for y in range(25):
         for x in range(25):
             color = get_color_from_rgb(img_arr[x, y])
             set_tile(offsetX + x, offsetY + y, color)
             time.sleep(timeout)
-    print(color_set)
 
 
 if __name__ == "__main__":
