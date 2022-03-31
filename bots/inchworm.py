@@ -47,6 +47,7 @@ def get_tiles():
 
     if resp.status_code == 200:
         resp_body = resp.json()
+        print(resp_body)
         return resp_body["tiles"]
     else:
         print("GET failed")
@@ -64,45 +65,42 @@ def get_most_popular_color():
                 if color in color_count:
                     color_count[color] += 1
                 else :
-                    color_count = 1
-
-    print(color_count)
+                    color_count[color] = 1
 
     return max(color_count, key=color_count.get)
 
 def main(args):
     # grow longer only when we see the least popular color
     default_color = get_most_popular_color()
+    print("Default color is %s" % default_color)
 
-    print(default_color)
+    headX, headY = 76, 25
+    try:
+        headX, headY = int(args[0]), int(args[1])
+    except:
+        print("Invalid x, y values given. Starting inchworm at {0},{1}", headX, headY)
 
-    # headX, headY = 76, 25
-    # try:
-    #     headX, headY = int(args[0]), int(args[1])
-    # except:
-    #     print("Invalid x, y values given. Starting inchworm at {0},{1}", headX, headY)
+    # create inchworm
+    inchworm_length, inchworm_color = 5, "burnt-orange"
 
-    # # create inchworm
-    # inchworm_length, inchworm_color = 5, "burnt-orange"
+    for y in reversed(range(inchworm_length)):
+        set_tile(headX, (headY - y)%100, inchworm_color)
+        time.sleep(timeout)
 
-    # for y in reversed(range(inchworm_length)):
-    #     set_tile(headX, (headY - y)%100, inchworm_color)
-    #     time.sleep(timeout)
+    # move inchworm
+    while True:
+        color = get_tile(headX, headY + 1)
 
-    # # move inchworm
-    # while True:
-    #     color = get_tile(headX, headY + 1)
-
-    #     set_tile(headX, headY + 1, inchworm_color)
-    #     time.sleep(timeout)
-    #     if color != default_color:
-    #         # inchworm just ate a non-default block and can now grow
-    #         inchworm_length += 1
-    #     else:
-    #         # move the tail of the inchworm
-    #         set_tile(headX, (headY-inchworm_length) % 100, default_color)
-    #         time.sleep(timeout)
-    #     headY = (headY + 1) % 100
+        set_tile(headX, headY + 1, inchworm_color)
+        time.sleep(timeout)
+        if color != default_color:
+            # inchworm just ate a non-default block and can now grow
+            inchworm_length += 1
+        else:
+            # move the tail of the inchworm
+            set_tile(headX, (headY-inchworm_length) % 100, default_color)
+            time.sleep(timeout)
+        headY = (headY + 1) % 100
 
 if __name__ == "__main__":
     main(sys.argv[1:])
