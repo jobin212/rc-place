@@ -47,7 +47,6 @@ def get_tiles():
 
     if resp.status_code == 200:
         resp_body = resp.json()
-        print(resp_body)
         return resp_body["tiles"]
     else:
         print("GET failed")
@@ -78,7 +77,7 @@ def main(args):
     try:
         headX, headY = int(args[0]), int(args[1])
     except:
-        print("Invalid x, y values given. Starting inchworm at {0},{1}", headX, headY)
+        print("Invalid x, y values given. Starting inchworm at %d,%d" % (headX, headY))
 
     # create inchworm
     inchworm_length, inchworm_color = 5, "burnt-orange"

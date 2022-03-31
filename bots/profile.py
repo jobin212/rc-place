@@ -65,13 +65,9 @@ def get_profile_image():
 def get_image_array_from_url(image_url):
     resp = requests.get(image_url)
     with Image.open(BytesIO(resp.content)) as img:
-        img.save("original_image.jpeg")
         img_resized = img.resize((25, 25))
-        img.save("resized_img.jpeg")
 
         pal_image = Image.new("P", (1, 1))
-        print(pal_image)
-        print(pal_image.load())
         pal_image.putpalette((
             0, 0, 0, #000000
             0, 85, 0,#005500
@@ -94,8 +90,6 @@ def get_image_array_from_url(image_url):
         )
 
         img_rs_q = img_resized.convert("RGB").quantize(palette=pal_image)
-        img_rs_q.save("quantized_img.png")
-
         return img_rs_q.convert("RGB").load()
 
 
@@ -104,17 +98,23 @@ def get_color_from_rgb(rgb):
     return hexToName[hex]
 
 
-def main():
+def main(args):
+    offsetX, offsetY = 0, 0
+    try:
+        offsetX, offsetY = int(args[0]), int(args[1])
+    except:
+        print("Invalid x, y values given. Starting inchworm at %d,%d" % (offsetX, offsetY))
+
     image_url = get_profile_image()
     img_arr = get_image_array_from_url(image_url)
     color_set = set()
     for y in range(25):
         for x in range(25):
             color = get_color_from_rgb(img_arr[x, y])
-            set_tile(x, y, color)
+            set_tile(offsetX + x, offsetY + y, color)
             time.sleep(timeout)
     print(color_set)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
