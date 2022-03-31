@@ -65,42 +65,53 @@ def get_profile_image():
 def get_image_array_from_url(image_url):
     resp = requests.get(image_url)
     with Image.open(BytesIO(resp.content)) as img:
+        img.save("original_image.jpeg")
         img_resized = img.resize((25, 25))
-        # img_resized_intermediate = img_resized.convert(mode='P', colors=16)
-        # img_resized_dithered = img_resized_intermediate.convert(mode='P', colors=16, dither=1, palette=Image.ADAPTIVE)
-        # img_resized_16 = img_resized.convert('P', palette=Image.ADAPTIVE, colors=16)
-        # img_resized_16.save("img1.png")
-        # pix = img_resized_16.convert('RGB').load()
+        img.save("resized_img.jpeg")
 
         pal_image = Image.new("P", (1, 1))
-        pal_image.putpalette(
-            (0,0,0,
-            0,255,0,
-            255,0,0,
-            255, 255, 0)
-            + (0, 0, 0) * 252
+        print(pal_image)
+        print(pal_image.load())
+        pal_image.putpalette((
+            0, 0, 0, #000000
+            0, 85, 0,#005500
+            0, 171, 0, #00ab00
+            0, 255, 0, #00ff00
+            0, 0, 255, #0000ff
+            100, 149, 237, #6495ed
+            0, 171, 255, #00abff
+            0, 255, 255, #00ffff
+            255, 0, 0, #ff0000
+            255, 85, 0, #ff5500
+            255, 171, 0, #ffab00
+            255, 255, 0, #ffff00
+            106, 13, 173, #6a0dad
+            255, 85, 255, #ff55ff
+            255, 171, 255, #ffabff
+            255, 255, 255, #ffffff
+        )
+            + (0, 0, 0) * 240
         )
 
         img_rs_q = img_resized.convert("RGB").quantize(palette=pal_image)
-        img_rs_q.save("img2.png")
+        img_rs_q.save("quantized_img.png")
 
         return img_rs_q.convert("RGB").load()
 
 
 def get_color_from_rgb(rgb):
     hex = '#%02x%02x%02x' % rgb
-    return hex
+    return hexToName[hex]
 
 
 def main():
     image_url = get_profile_image()
     img_arr = get_image_array_from_url(image_url)
     color_set = set()
-    for x in range(25):
-        for y in range(25):
+    for y in range(25):
+        for x in range(25):
             color = get_color_from_rgb(img_arr[x, y])
-            color_set.add(color)
-            set_tile(y, x, "red")
+            set_tile(x, y, color)
             time.sleep(timeout)
     print(color_set)
 
