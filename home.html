@@ -96,6 +96,30 @@
                 document.getElementById('x-y').innerText = x + ", " + y + " | " + hexToName[hex];
             })
 
+            let translate = {x: 0, y: 0, zoom: 1.0};
+
+            function generateTransform(translateObj) {
+                return `scale(${translate.zoom}) translateX(${translate.x}) translateY(${translate.y})`;
+            }
+
+            function clamp(n, min, max) {
+                return Math.min(Math.max(n, min), max);
+            }
+
+            canvas.addEventListener('wheel', function(e) {
+                console.log(e);
+                if (e.wheelDelta < 0) {
+                    console.log("scrolled down");
+                } else {
+                    console.log("scrolled up");
+                }
+                translate.zoom += e.wheelDelta / 100;
+                translate.zoom = clamp(translate.zoom, 0.3, 5.0);
+                canvas.style.transform = generateTransform(translate);
+            });
+
+            document.canvas = canvas;
+
             function setColor(x, y, c) {
                 ctx.fillStyle = colorMap[c];
                 ctx.fillRect(tileSize * x + 2, tileSize * y, tileSize, tileSize);
