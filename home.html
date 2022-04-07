@@ -73,9 +73,9 @@
 
             function getCursorPosition(canvas, event) {
                 const rect = canvas.getBoundingClientRect()
-                const x = Math.round((event.clientX - rect.left) / tileSize) - 1;
-                const y = Math.round((event.clientY - rect.top) / tileSize) - 1;
-                return { x: x, y: y }
+                const x = Math.round((event.clientX - rect.left) / tileSize - 1);
+                const y = Math.round((event.clientY - rect.top) / tileSize - 1);
+                return { x: Math.floor(x/translate.zoom), y: Math.floor(y/translate.zoom) }
             }
 
             function rgbToHex(r, g, b) {
