@@ -4,6 +4,7 @@ import requests
 import os
 import time
 import sys
+from typing import Tuple, List
 
 
 color_to_name = {
@@ -44,10 +45,39 @@ def set_tile(x, y, color_id):
     else:
         print(f'Tile not placed at ({x},{y}) | Status code: {resp.status_code} | Message: {resp.text}')
 
+def parse_aof_file_into_bot_commands(file_name: str) -> List[Tuple[int, int]]:
+    commands = []
+    with open(file_name, 'rb') as f:
+        while True:
+            line = f.readline()
+            if len(line) == 0:
+                break
+            if line.strip() == b'SET':
+                try:
+                    f.readline()
+                    f.readline()
+                    f.readline()
+                    raw_position = f.readline().decode()
+                    f.readline()
+                    raw_color = f.readline().decode()
+
+                    position = int(raw_position[1:])
+                    color = int(raw_color)
+
+                    if not 0 <= position < 10000 or not 0 <= color < 16:
+                        continue
+
+                    commands.append((position, color))
+                except Exception as e:
+                    print(f"Continuing after exception {e}")
+                    continue
+    return commands
+
 
 def main(args):
-    for line in open('commands.txt', 'r').readlines():
-        pos_index, color_id = map(int, line.split(':'))
+    commands = parse_aof_file_into_bot_commands(args[0])
+
+    for pos_index, color_id in commands:
         pos_x, pos_y = pos_index % 100, pos_index // 100
         set_tile(pos_x, pos_y, color_id)
         time.sleep(0.001)
