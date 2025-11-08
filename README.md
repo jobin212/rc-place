@@ -140,3 +140,6 @@ Query Parameters
 ```shell
 🎨 curl http://localhost:8080/tile?x=15&y=3 -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN"
 ```
+
+* **Sample Loom**
+* https://www.loom.com/share/c528daa0232143dabe29394aa4971a40
